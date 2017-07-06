@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+subprojects{ subproject->
+    apply plugin:'groovy'
+    apply plugin:'application'
+    apply plugin:'com.github.johnrengelman.shadow'
+    
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+    
+    sourceSets{
+        main{
+            groovy{
+                srcDirs=['src']
+            }
+            resources{
+                srcDirs=['cfg']
+            }
+        }
+        test{
+            groovy{
+                srcDirs=['test']
+            }
+            /*resources{
+                srcDirs=['test/res']
+            }*/
+        }
+    }
+    
+    mainClassName=subproject.name
+    
+    dependencies{
+        compile 'org.codehaus.groovy:groovy-all:+'
+        testCompile 'org.spockframework:spock-core:+'
+    }
+    
+    compileGroovy{
+        options.encoding='UTF-8'
+    }
+    
+    shadowJar{
+        doLast{
+            copy{
+                from 'build/libs/作业2-all.jar'
+                into projectDir
+                rename({'homework2.jar'})
+            }
+        }
+    }
+    
+    System.setProperty('file.encoding', 'UTF-8')
+}
+
+wrapper{
+    gradleVersion = '4.0'
+}
