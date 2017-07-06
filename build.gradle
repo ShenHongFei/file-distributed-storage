@@ -43,6 +43,8 @@ subprojects{ subproject->
     
     dependencies{
         compile 'org.codehaus.groovy:groovy-all:+'
+        compile group: 'io.netty', name: 'netty-all', version: '4.1.12.Final'
+    
         testCompile 'org.spockframework:spock-core:+'
     }
     
