@@ -1,6 +1,7 @@
 package system
 
 import io.netty.bootstrap.Bootstrap
+import io.netty.channel.Channel
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
@@ -11,12 +12,10 @@ import io.netty.handler.codec.serialization.ObjectEncoder
 
 class FileClient{
     
-    def echoMessage(){
-        
-    }
+    Scanner scanner=new Scanner(System.in)
     
     def run(){
-        new Bootstrap().with{
+        def channel=new Bootstrap().with{
             group(new NioEventLoopGroup())
             channel(NioSocketChannel)
             handler({it.pipeline().addLast(
@@ -25,8 +24,12 @@ class FileClient{
                     new FileClientHandler(),
                     new FileClientCommandHandler())} as ChannelInitializer<SocketChannel>)
             //start to accept incoming connections.Wait until the server socket is closed.(does not happen)
-            connect('localhost',8080).sync().channel().closeFuture().sync()
+            connect('localhost',8080).sync().channel()
         }
+        while(scanner.hasNextLine()){
+            channel.writeAndFlush(new Command(method:scanner.nextLine()))
+        }
+        channel.close().sync()
     }
     
     
