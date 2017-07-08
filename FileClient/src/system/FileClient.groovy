@@ -1,39 +1,49 @@
 package system
 
-import io.netty.bootstrap.Bootstrap
-import io.netty.channel.Channel
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.handler.codec.serialization.ClassResolvers
-import io.netty.handler.codec.serialization.ObjectDecoder
-import io.netty.handler.codec.serialization.ObjectEncoder
-
 class FileClient{
     
-    Scanner scanner=new Scanner(System.in)
+    Scanner scanner =new Scanner(System.in)
+    Client  client
     
-    def run(){
-        def channel=new Bootstrap().with{
-            group(new NioEventLoopGroup())
-            channel(NioSocketChannel)
-            handler({it.pipeline().addLast(
-                    new ObjectEncoder(),
-                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                    new FileClientHandler(),
-                    new FileClientCommandHandler())} as ChannelInitializer<SocketChannel>)
-            //start to accept incoming connections.Wait until the server socket is closed.(does not happen)
-            connect('localhost',8080).sync().channel()
-        }
-        while(scanner.hasNextLine()){
-            channel.writeAndFlush(new Command(method:scanner.nextLine()))
-        }
-        channel.close().sync()
+    static void main(String... args){
+        new FileClient().run(args)
     }
     
     
-    static void main(String... args){
-        new FileClient().run()
+    FileClient(){
+        client=new Client('localhost',8080,null)
+    }
+    
+    def run(String... args){
+        if(!args){
+            println '''
+            上传文件
+            java -jar FileClient.jar upload afile
+            该程序输出一个新存储文件的uuid，就是在服务器端保存的文件的唯一标识。
+            
+            下载文件
+            java -jar FileClient.jar download uuid
+            
+            删除文件
+            java -jar FileClient.jar remove uuid
+            '''.stripMargin()
+            return
+        }
+        this.metaClass.getMetaMethod(args[0]).invoke(this,args.length>1?args[1..-1]:null)
+        client.waitClose()
+    }
+    
+    def upload(){
+        client.request=[action:'test',attachment:new File('D:\\essential-netty-in-action\\images\\Figure 14.2 Real-world Memcached request and response headers.jpg').bytes]
+        new File('tt.jpg').bytes=client.response.attachment
+        client.channel.close()
+    }
+    
+    def download(){
+        
+    }
+    
+    def remove(){
+        
     }
 }
