@@ -16,7 +16,7 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     void channelActive(ChannelHandlerContext ctx) throws Exception{
-        initAction?.call(ctx)
+        initAction?.call(ctx,server)
     }
     
     @Override
@@ -30,7 +30,12 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
             }
         }
         println("${msg.action}($map)")
-        server.invokeMethod(msg.action,[ctx,msg].toArray())
+        try{
+            server.invokeMethod(msg.action,[ctx,msg].toArray())
+        }catch(MissingMethodException e){
+            server.defaultMethod(msg.action,[ctx,msg].toArray())
+        }
+        
     }
     
     @Override

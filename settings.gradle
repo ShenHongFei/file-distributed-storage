@@ -1,1 +1,1 @@
-include 'Common','FileClient','FileServer','Monitor','StorageNode'
+include 'Core','FileClient','FileServer','Monitor','StorageNode'

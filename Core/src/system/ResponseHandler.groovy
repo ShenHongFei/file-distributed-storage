@@ -17,7 +17,7 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     void channelActive(ChannelHandlerContext ctx) throws Exception{
-        initAction?.call(ctx)
+        initAction?.call(ctx,client)
     }
     
     @Override
@@ -25,6 +25,7 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
         //todo:log
         client.response=msg
     }
+    
     
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{

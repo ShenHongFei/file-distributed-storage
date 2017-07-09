@@ -4,7 +4,7 @@ import spock.lang.Specification
 
 
 class FileClientTest extends Specification{
-    def 'run'(){
+    def 'upload'(){
         def client = new FileClient()
         
         expect:

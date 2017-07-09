@@ -1,5 +1,10 @@
 package system
 
+import io.netty.buffer.Unpooled
+import io.netty.channel.socket.DatagramPacket
+import io.netty.util.CharsetUtil
+import io.netty.util.internal.SocketUtils
+
 class FileClient{
     
     Scanner scanner =new Scanner(System.in)
@@ -11,7 +16,7 @@ class FileClient{
     
     
     FileClient(){
-        client=new Client('localhost',8080,null)
+        client=new Client('127.0.0.1',8080,ConnectionType.UDP,null)
     }
     
     def run(String... args){
@@ -34,9 +39,10 @@ class FileClient{
     }
     
     def upload(){
-        client.request=[action:'test',attachment:new File('D:\\essential-netty-in-action\\images\\Figure 14.2 Real-world Memcached request and response headers.jpg').bytes]
-        new File('tt.jpg').bytes=client.response.attachment
-        client.channel.close()
+
+        client.request=[aaa:'bbb',action:'test']
+//        new File('tt.jpg').bytes=client.response.attachment
+//        client.channel.close()
     }
     
     def download(){
