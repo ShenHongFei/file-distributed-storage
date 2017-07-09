@@ -24,7 +24,7 @@ class Server{
     
     /**
      * @param server 业务服务器对象
-     * @param initAction 连接建立后执行，闭包参数为 server,ChannelHandlerContext
+     * @param initAction 连接建立后执行，闭包参数为 BusinessServer ..,ChannelHandlerContext ..
      */
     Server(server,Integer port,ConnectionType type,@Nullable Closure initAction,ChannelHandler... extraHandlers){
         if(type==ConnectionType.TCP){
@@ -57,9 +57,6 @@ class Server{
         }
     }
     
-    def setResponse(){
-        
-    }
     
     def waitClose(){
         serverChannel.closeFuture().sync()

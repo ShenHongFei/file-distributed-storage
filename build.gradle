@@ -46,6 +46,9 @@ subprojects{ subproject->
         compile group: 'io.netty', name: 'netty-all', version: '4.1.12.Final'
         if(subproject.name!='Core'){
             compile project(':Core')
+            if(subproject.name!='StorageNode'){
+                compile project(':StorageNode')
+            }
         }
         
     

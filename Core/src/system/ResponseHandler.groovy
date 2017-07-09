@@ -17,12 +17,20 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     void channelActive(ChannelHandlerContext ctx) throws Exception{
-        initAction?.call(ctx,client)
+        initAction?.call(client,ctx)
     }
     
     @Override
     protected void channelRead0(ChannelHandlerContext ctx,Map msg) throws Exception{
         //todo:log
+        def map=msg.collectEntries{
+            if(it.key=='file'){
+                return [file:it.value.length]
+            }else{
+                return [it.key,it.value]
+            }
+        }
+        println("$map")
         client.response=msg
     }
     

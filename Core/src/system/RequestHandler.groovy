@@ -16,15 +16,15 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     void channelActive(ChannelHandlerContext ctx) throws Exception{
-        initAction?.call(ctx,server)
+        initAction?.call(server,ctx)
     }
     
     @Override
     protected void channelRead0(ChannelHandlerContext ctx,Map msg) throws Exception{
         //todo:log
         def map=msg.collectEntries{
-            if(it.key=='attachment'){
-                return [attachment:it.value.length]
+            if(it.key=='file'){
+                return [file:it.value.length]
             }else{
                 return [it.key,it.value]
             }

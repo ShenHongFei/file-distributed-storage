@@ -4,10 +4,11 @@ import spock.lang.Specification
 
 
 class FileClientTest extends Specification{
-    def 'upload'(){
-        def client = new FileClient()
+    
+    def '上传文件'(){
+        def fileClient = new FileClient('cfg/FileServer.properties')
         
         expect:
-        client.run('upload')
+        fileClient.run('upload','data/灰色鲨鱼.png')
     }
 }

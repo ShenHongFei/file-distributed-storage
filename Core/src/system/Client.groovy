@@ -34,7 +34,9 @@ class Client{
             ConnectionType type
     InetSocketAddress      serverSocketAddress
     
-    
+    /**
+     * @param initAction 连接建立后执行，闭包参数为 Client ..,ChannelHandlerContext ..
+     */
     Client(String serverAddress,Integer port,ConnectionType type,@Nullable Closure initAction,ChannelHandler... extraHandlers){
         serverSocketAddress=SocketUtils.socketAddress(serverAddress,port)
         this.type=type
