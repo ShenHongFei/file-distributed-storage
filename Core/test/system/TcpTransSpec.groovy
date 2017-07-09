@@ -39,6 +39,15 @@ class TcpTransSpec extends Specification{
         then:
         testServer.action=='test'
         testServer.data.attachment==new File('data/'+'灰色鲨鱼.png').bytes
+    }
+    
+    def '大文件测试'(){
+        when:
+        client.request=[action:'test',attachment:new File('data/'+'灰色鲨鱼.png').bytes]
+        sleep(500)
+        then:
+        testServer.action=='test'
+        testServer.data.attachment==new File('data/'+'灰色鲨鱼.png').bytes
         
         when:
         //大文件测试
@@ -48,6 +57,5 @@ class TcpTransSpec extends Specification{
         map.result
         map.attachment.length==new File('data/'+'image.iso').size()
     }
-    
     
 }

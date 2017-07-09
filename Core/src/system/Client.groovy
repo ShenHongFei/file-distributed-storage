@@ -70,7 +70,7 @@ class Client{
                 out.writeObject(req)
                 out.flush()
                 byte[] bytes = bos.toByteArray()
-                channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(bytes),SocketUtils.socketAddress('127.0.0.1',8080)))
+                channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(bytes),serverSocketAddress))
             } finally {
                 try {
                     bos.close()

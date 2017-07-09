@@ -33,7 +33,11 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
         try {
             instream = new ObjectInputStream(bis)
             Object o = instream.readObject()
-            server.invokeMethod(o.action,[ctx,o].toArray())
+            try{
+                server.invokeMethod(o.action,[ctx,o].toArray())
+            }catch(MissingMethodException e){
+                server.defaultMethod(o.action,[ctx,o].toArray())
+            }
         } finally {
             try {
                 if (instream != null) {
