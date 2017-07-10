@@ -21,6 +21,12 @@ class FileClient{
     FileClient(String configLocation){
         config.load(new FileInputStream(configLocation))
         client=new Client(config.FileServerIP,config.FileServerPort as Integer,ConnectionType.TCP,null)
+        File fileser=new File('data/files.ser')
+        if(fileser.exists()){
+            fileser.withObjectInputStream{
+                files=it.readObject()
+            }
+        }
     }
     
     def run(String... args){
@@ -60,7 +66,7 @@ class FileClient{
         }
         files[file.name]=map.uuid
         println map.uuid
-        
+        saveFiles()
     }
     
     def download(String uuidstr){
@@ -81,5 +87,12 @@ class FileClient{
     
     def remove(){
         
+    }
+    
+    def saveFiles(){
+        File fileser=new File('data/files.ser')
+        fileser.withObjectOutputStream{
+            it.writeObject(files)
+        }
     }
 }

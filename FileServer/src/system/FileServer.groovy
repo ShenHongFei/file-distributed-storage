@@ -11,24 +11,26 @@ class FileServer{
     
     Server                           server    =new Server(this,8080,ConnectionType.TCP,null)
     Server                           udpServer =new Server(this,8081,ConnectionType.UDP,null)
+    File fileser=new File('data/files.ser')
     Map<String,NodeInfo> nodes     =[:]
-    Map<UUID,FileInfo>  files=[:]
-    
-    
-    
+    Map<UUID,FileInfo>  files=[:] 
     
     static void main(String[] args){
         new FileServer().run()
+    }
+    
+    FileServer(){
+        if(fileser.exists()){
+            fileser.withObjectInputStream{
+                files=it.readObject()
+            }
+        }
     }
     
     void run(){
         server.waitClose()
     }
     
-    def test(ChannelHandlerContext ctx,Map req){
-        println 'success'
-        println req
-    }
     
     def nodeReg(ChannelHandlerContext ctx,Map map){
         nodes[map.nodeinfo.name]=map.nodeinfo
@@ -72,9 +74,11 @@ class FileServer{
         println best
         if(!best){
             ctx.channel().writeAndFlush([result:false,message:'当前无可用备份节点'])
+            saveFiles()
             return
         }
         ctx.channel().writeAndFlush([result:true,nodeinfo:best])
+        saveFiles()
     }
     
     def addBackup(ChannelHandlerContext ctx,Map map){
@@ -83,5 +87,11 @@ class FileServer{
     
     def getFileInfo(ChannelHandlerContext ctx,Map map){
         ctx.writeAndFlush([result:true,fileinfo:files[map.uuid]])
+    }
+    
+    def saveFiles(){
+        fileser.withObjectOutputStream{
+            it.writeObject(files)
+        }
     }
 }

@@ -16,8 +16,7 @@ class FileClientTest extends Specification{
     def '下载文件'(){
         def fileClient = new FileClient('cfg/FileServer.properties')
         expect:
-        fileClient.run('download','3fc1e208-c645-4724-bda6-de58368b0690')
-        
+        fileClient.run('download',fileClient.files.iterator().next().value.toString())
     }
     
 }
