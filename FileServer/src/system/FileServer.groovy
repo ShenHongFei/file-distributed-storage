@@ -89,6 +89,16 @@ class FileServer{
         ctx.writeAndFlush([result:true,fileinfo:files[map.uuid]])
     }
     
+    def remove(ChannelHandlerContext ctx,Map map){
+        FileInfo fileInfo=files[map.uuid]
+        def main = fileInfo.main
+        def mainclient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
+            ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
+        })
+        files.remove(map.uuid)
+        saveFiles()
+    }
+    
     def saveFiles(){
         fileser.withObjectOutputStream{
             it.writeObject(files)

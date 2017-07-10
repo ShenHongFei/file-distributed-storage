@@ -15,8 +15,18 @@ class FileClientTest extends Specification{
     
     def '下载文件'(){
         def fileClient = new FileClient('cfg/FileServer.properties')
-        expect:
+        when:
         fileClient.run('download',fileClient.files.iterator().next().value.toString())
+        then:
+        noExceptionThrown()
+    }
+    
+    def '删除文件'(){
+        def fileClient = new FileClient('cfg/FileServer.properties')
+        when:
+        fileClient.run('remove',fileClient.files.iterator().next().value.toString())
+        then:
+        noExceptionThrown()
     }
     
 }

@@ -85,8 +85,12 @@ class FileClient{
         new File("data/$fileInfo.name").bytes=resp2.file
     }
     
-    def remove(){
-        
+    def remove(String uuidstr){
+        def uuid = UUID.fromString(uuidstr)
+        client.request=[action:'remove',uuid:uuid]
+        files.removeAll{k,v->v==uuid}
+        saveFiles()
+        println '删除成功'
     }
     
     def saveFiles(){

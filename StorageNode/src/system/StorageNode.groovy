@@ -55,4 +55,8 @@ class StorageNode{
         ctx.writeAndFlush([result:true,file:new File("$config.RootFolder/$map.uuid").bytes])
     }
     
+    def remove(ChannelHandlerContext ctx,Map map){
+        new File("$config.RootFolder/$map.uuid").delete()
+    }
+    
 }
