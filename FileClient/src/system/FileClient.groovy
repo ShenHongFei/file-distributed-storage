@@ -11,6 +11,7 @@ class FileClient{
     Scanner scanner =new Scanner(System.in)
     Properties config =new Properties()
     Client  client
+    Map<String,UUID> files=[:]
     
     static void main(String... args){
         new FileClient(args[0]).run(*args[1..-1])
@@ -42,18 +43,40 @@ class FileClient{
     
     def upload(String path){
         client.request=[action:'selectNode']
-        NodeInfo nodeinfo=client.response
+        def resp = client.response
+        if(!resp.result){
+            println resp.message
+            return 
+        }
+        NodeInfo nodeinfo= resp.nodeinfo
         def file = new File(path)
         def nodeclient=new Client(nodeinfo.address,nodeinfo.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
             c.request=[action:'upload',name:file.name,file:file.bytes]
         })
         def map = nodeclient.response
-        //保存 map.uuid，file.name的对应关系
+        if(!map.result){
+            println map.message
+            return
+        }
+        files[file.name]=map.uuid
+        println map.uuid
         
     }
     
-    def download(){
-        
+    def download(String uuidstr){
+        def uuid = UUID.fromString(uuidstr)
+        client.request=[action:'getFileInfo',uuid:uuid]
+        def resp = client.response
+        if(!resp.result) return
+        FileInfo fileInfo=resp.fileinfo
+        NodeInfo main=fileInfo.main
+        NodeInfo backup=fileInfo.backup
+        def resp2=null
+        def nodeclient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
+            c.request=[action:'download',uuid: uuid]
+        })
+        resp2=nodeclient.response
+        new File("data/$fileInfo.name").bytes=resp2.file
     }
     
     def remove(){

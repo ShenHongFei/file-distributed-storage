@@ -10,6 +10,7 @@ class NodeInfo implements Comparable,Serializable{
     Double  ratio = 0
     Date    alive
     
+    
     @Override
     int compareTo(Object o){
         return this.ratio-o.ratio

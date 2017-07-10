@@ -7,9 +7,15 @@ import io.netty.channel.ChannelHandlerContext
 
 class FileServer{
     
+    
+    
     Server                           server    =new Server(this,8080,ConnectionType.TCP,null)
     Server                           udpServer =new Server(this,8081,ConnectionType.UDP,null)
     Map<String,NodeInfo> nodes     =[:]
+    Map<UUID,FileInfo>  files=[:]
+    
+    
+    
     
     static void main(String[] args){
         new FileServer().run()
@@ -31,11 +37,9 @@ class FileServer{
     
     void selectNode(ChannelHandlerContext ctx,Map map){
         NodeInfo best=nodes.findAll{k,v->
-            boolean alive=false
             use(TimeCategory){
-                alive= v.alive>15.seconds.ago
+                v.alive>15.seconds.ago
             }
-            alive
         }.min{k,v->v}?.value
         println best
         if(!best){
@@ -55,5 +59,29 @@ class FileServer{
             }
         })*/
         
+    }
+    
+    def addFile(ChannelHandlerContext ctx,Map map){
+        files[map.uuid]=new FileInfo(uuid:map.uuid,main:map.nodeinfo,name:map.name,size:map.size)
+        NodeInfo best=nodes.findAll{k,v->
+            k!=map.nodeinfo.name&&
+            use(TimeCategory){
+                v.alive>15.seconds.ago
+            }
+        }.min{k,v->v}?.value
+        println best
+        if(!best){
+            ctx.channel().writeAndFlush([result:false,message:'当前无可用备份节点'])
+            return
+        }
+        ctx.channel().writeAndFlush([result:true,nodeinfo:best])
+    }
+    
+    def addBackup(ChannelHandlerContext ctx,Map map){
+        
+    }
+    
+    def getFileInfo(ChannelHandlerContext ctx,Map map){
+        ctx.writeAndFlush([result:true,fileinfo:files[map.uuid]])
     }
 }
