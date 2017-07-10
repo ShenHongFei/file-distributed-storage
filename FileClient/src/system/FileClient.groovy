@@ -1,10 +1,6 @@
 package system
 
-import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.socket.DatagramPacket
-import io.netty.util.CharsetUtil
-import io.netty.util.internal.SocketUtils
 
 class FileClient{
     
@@ -78,11 +74,24 @@ class FileClient{
         NodeInfo main=fileInfo.main
         NodeInfo backup=fileInfo.backup
         def resp2=null
-        def nodeclient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
-            c.request=[action:'download',uuid: uuid]
-        })
-        resp2=nodeclient.response
-        new File("data/$fileInfo.name").bytes=resp2.file
+        try{
+            def mainclient=new Client(main.address,main.port,ConnectionType.TCP,null)
+            mainclient.request=[action:'download',uuid: uuid]
+            def trymain = new Thread({resp2=mainclient.response})
+            trymain.start()
+            trymain.join(10*1000)
+        }catch(any){}
+        
+        if(!resp2){
+            def backupclient=new Client(backup.address,backup.port,ConnectionType.TCP,null)
+            backupclient.request=[action:'download',uuid: uuid]
+            resp2=backupclient.response
+        }
+        if(resp2){
+            new File("data/$fileInfo.name").bytes=resp2.file
+        }else{
+            println '下载失败'
+        }
     }
     
     def remove(String uuidstr){

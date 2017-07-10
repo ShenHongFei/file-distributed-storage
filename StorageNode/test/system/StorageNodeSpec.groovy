@@ -58,4 +58,17 @@ class StorageNodeSpec extends Specification{
             sleep(10000)
         }
     }
+    
+    def '运行 1'(){
+//        StorageNode.main('cfg/StorageNode.properties')
+        def node = new StorageNode('cfg/StorageNode1.properties')
+        
+        expect:
+        new Thread({
+            node.run()
+        }).start()
+        while(true){
+            sleep(10000)
+        }
+    }
 }

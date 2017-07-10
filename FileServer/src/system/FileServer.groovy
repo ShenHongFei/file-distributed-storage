@@ -40,9 +40,9 @@ class FileServer{
     void selectNode(ChannelHandlerContext ctx,Map map){
         NodeInfo best=nodes.findAll{k,v->
             use(TimeCategory){
-                v.alive>15.seconds.ago
+                v.alive>30.seconds.ago
             }
-        }.min{k,v->v}?.value
+        }.min{a,b->a.value<=>b.value}?.value
         println best
         if(!best){
             ctx.channel().writeAndFlush([result:false,message:'当前无可用存储节点'])
@@ -68,9 +68,9 @@ class FileServer{
         NodeInfo best=nodes.findAll{k,v->
             k!=map.nodeinfo.name&&
             use(TimeCategory){
-                v.alive>15.seconds.ago
+                v.alive>30.seconds.ago
             }
-        }.min{k,v->v}?.value
+        }.min{a,b->a.value<=>b.value}?.value
         println best
         if(!best){
             ctx.channel().writeAndFlush([result:false,message:'当前无可用备份节点'])
@@ -82,7 +82,8 @@ class FileServer{
     }
     
     def addBackup(ChannelHandlerContext ctx,Map map){
-        
+        files[map.uuid].backup=map.nodeinfo
+        saveFiles()
     }
     
     def getFileInfo(ChannelHandlerContext ctx,Map map){
@@ -92,9 +93,16 @@ class FileServer{
     def remove(ChannelHandlerContext ctx,Map map){
         FileInfo fileInfo=files[map.uuid]
         def main = fileInfo.main
+        def backup=fileInfo?.backup
         def mainclient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
             ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
         })
+        if(backup){
+            def backupclient=new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
+                //todo:为什么不能用c.request=xxx
+                ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
+            })
+        }
         files.remove(map.uuid)
         saveFiles()
     }

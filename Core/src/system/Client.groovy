@@ -42,7 +42,7 @@ class Client{
         this.type=type
         channel=new Bootstrap().with{
             group(new NioEventLoopGroup())
-            handler(new LoggingHandler(LogLevel.INFO))
+            handler(new LoggingHandler(LogLevel.DEBUG))
             if(type==TCP){
                 channel(NioSocketChannel)
                 option(ChannelOption.SO_KEEPALIVE,true)
