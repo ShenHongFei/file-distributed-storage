@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager
 
 class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     
-    static logger=LogManager.logger
+    static logger=LogManager.getLogger(ResponseHandler)
     
     Client client
     Closure initAction

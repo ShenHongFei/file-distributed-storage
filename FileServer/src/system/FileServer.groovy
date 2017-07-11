@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager
 
 class FileServer{
     
-    static logger=LogManager.logger
+    static logger=LogManager.getLogger(FileServer)
     
     Server                           server    =new Server(this,8080,ConnectionType.TCP,null)
     Server                           udpServer =new Server(this,8081,ConnectionType.UDP,null)

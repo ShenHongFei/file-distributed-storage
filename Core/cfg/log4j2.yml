@@ -5,7 +5,7 @@ Configuration:
         Console:
             name: STDOUT
             PatternLayout:
-                Pattern: "%highlight{%-5level:[%6thread]%50logger#%-15method  -- %msg %n%rException{full}}{FATAL=red, ERROR=red, WARN=yellow, INFO=blue, DEBUG=black, TRACE=black}"
+                Pattern: "%highlight{%-5level:[%6thread]%50logger   |  %msg %n%rException{full}}{FATAL=red, ERROR=red, WARN=yellow, INFO=blue, DEBUG=black, TRACE=black}"
         File:
             name: File
             fileName: log.txt

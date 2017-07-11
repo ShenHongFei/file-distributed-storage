@@ -9,7 +9,7 @@ import io.netty.channel.socket.DatagramPacket
 import org.apache.logging.log4j.LogManager
 
 class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
-    static logger=LogManager.logger
+    static logger=LogManager.getLogger(UDPRequestHandler)
     
     def server
     Closure initAction
