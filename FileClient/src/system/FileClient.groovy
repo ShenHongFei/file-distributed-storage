@@ -1,8 +1,11 @@
 package system
 
 import io.netty.channel.ChannelHandlerContext
+import org.apache.logging.log4j.LogManager
 
 class FileClient{
+    
+    static logger=LogManager.logger
     
     Scanner scanner =new Scanner(System.in)
     Properties config =new Properties()

@@ -26,7 +26,7 @@ class StorageNode{
         while(true){
             nodeinfo.alive=new Date()
             udpClient.request=[action:'nodeReg',nodeinfo:nodeinfo]
-            sleep(5000)
+            sleep(15*1000)
         }
     }
     

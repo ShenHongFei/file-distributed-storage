@@ -3,9 +3,12 @@ package system
 import com.sun.istack.internal.Nullable
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import org.apache.logging.log4j.LogManager
 
 
 class ResponseHandler extends SimpleChannelInboundHandler<Map>{
+    
+    static logger=LogManager.logger
     
     Client client
     Closure initAction
@@ -30,14 +33,14 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
                 return [it.key,it.value]
             }
         }
-        println("$map")
+        logger.info("$map")
         client.response=msg
     }
     
     
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
-        cause.printStackTrace()
-        println cause.localizedMessage
+        logger.error cause.localizedMessage
+        throw cause
     }
 }

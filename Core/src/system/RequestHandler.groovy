@@ -3,9 +3,12 @@ package system
 import com.sun.istack.internal.Nullable
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import org.apache.logging.log4j.LogManager
+
 
 class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
+    static logger=LogManager.logger
     def server
     Closure initAction
     
@@ -21,7 +24,6 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     protected void channelRead0(ChannelHandlerContext ctx,Map msg) throws Exception{
-        //todo:log
         def map=msg.collectEntries{
             if(it.key=='file'){
                 return [file:it.value.length]
@@ -29,7 +31,12 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
                 return [it.key,it.value]
             }
         }
-        println("${msg.action}($map)")
+        if(msg.action=='nodeReg'){
+            logger.debug("${msg.action}($map)")
+        }else{
+            logger.info("${msg.action}($map)")
+        }
+        
         try{
             server.invokeMethod(msg.action,[ctx,msg].toArray())
         }catch(MissingMethodException e){
@@ -40,7 +47,7 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
-        cause.printStackTrace()
-        println cause.localizedMessage
+        logger.error cause.localizedMessage
+        throw cause
     }
 }

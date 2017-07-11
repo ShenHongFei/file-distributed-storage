@@ -1,0 +1,38 @@
+Configuration:
+    status: warn
+    monitorInterval: 5
+    appenders:
+        Console:
+            name: STDOUT
+            PatternLayout:
+                Pattern: "%highlight{%-5level:[%6thread]%50logger#%-15method  -- %msg %n%rException{full}}{FATAL=red, ERROR=red, WARN=yellow, INFO=blue, DEBUG=black, TRACE=black}"
+        File:
+            name: File
+            fileName: log.txt
+            bufferedIO: false
+            bufferSize: 0
+            PatternLayout:
+                Pattern: "%d{a h:mm:ss.SSS} %-5level:[%12thread]%70logger#%-20method  -- %msg %n%rException{full}"
+    Loggers:
+        logger:
+            -
+                name: org.apache.logging.log4j.test1
+                level: debug
+                additivity: false
+                ThreadContextMapFilter:
+                    KeyValuePair:
+                        key: test
+                        value: 123
+                AppenderRef:
+                    ref: STDOUT
+            -
+                name: org.apache.logging.log4j.test2
+                level: debug
+                additivity: false
+                AppenderRef:
+                    ref: File
+        Root:
+            level: debug
+            AppenderRef:
+                - ref: STDOUT
+#                - ref: File

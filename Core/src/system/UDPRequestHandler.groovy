@@ -6,8 +6,10 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 //!不是JDK中的DatagramPacket
 import io.netty.channel.socket.DatagramPacket
+import org.apache.logging.log4j.LogManager
 
 class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
+    static logger=LogManager.logger
     
     def server
     Closure initAction
@@ -34,7 +36,13 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
             instream = new ObjectInputStream(bis)
             Object o = instream.readObject()
             try{
-                println o
+                if(o instanceof Map){
+                    if(o.action=='nodeReg'){
+                        logger.debug(o)
+                    }else{
+                        logger.info(o)
+                    }
+                }
                 server.invokeMethod(o.action,[ctx,o].toArray())
             }catch(MissingMethodException e){
                 server.defaultMethod(o.action,[ctx,o].toArray())
@@ -52,7 +60,7 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
     
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
-        cause.printStackTrace()
-        println cause.localizedMessage
+        logger.error cause.localizedMessage
+        throw cause
     }
 }

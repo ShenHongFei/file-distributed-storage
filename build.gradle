@@ -43,7 +43,16 @@ subprojects{ subproject->
     
     dependencies{
         compile 'org.codehaus.groovy:groovy-all:+'
-        compile group: 'io.netty', name: 'netty-all', version: '4.1.12.Final'
+        
+        compile 'io.netty:netty-all:4.1.12.Final'
+        
+        //日志
+        compile 'org.apache.logging.log4j:log4j-api:+'
+        compile 'org.apache.logging.log4j:log4j-core:+'
+        compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:+'
+        compile 'com.fasterxml.jackson.core:jackson-databind:+'
+    
+    
         if(subproject.name!='Core'){
             compile project(':Core')
             if(subproject.name!='StorageNode'){

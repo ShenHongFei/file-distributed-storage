@@ -17,8 +17,14 @@ import io.netty.handler.codec.serialization.ObjectEncoder
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.util.internal.logging.InternalLoggerFactory
+import io.netty.util.internal.logging.Log4J2LoggerFactory
 
 class Server{
+    
+    static{
+        InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE)
+    }
     
     Channel serverChannel
     

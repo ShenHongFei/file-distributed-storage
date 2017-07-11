@@ -4,10 +4,11 @@ import groovy.time.TimeCategory
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
+import org.apache.logging.log4j.LogManager
 
 class FileServer{
     
-    
+    static logger=LogManager.logger
     
     Server                           server    =new Server(this,8080,ConnectionType.TCP,null)
     Server                           udpServer =new Server(this,8081,ConnectionType.UDP,null)
@@ -34,7 +35,6 @@ class FileServer{
     
     def nodeReg(ChannelHandlerContext ctx,Map map){
         nodes[map.nodeinfo.name]=map.nodeinfo
-        println nodes
     }
     
     void selectNode(ChannelHandlerContext ctx,Map map){

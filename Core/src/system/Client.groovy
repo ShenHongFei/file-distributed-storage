@@ -18,6 +18,8 @@ import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.internal.SocketUtils
+import io.netty.util.internal.logging.InternalLoggerFactory
+import io.netty.util.internal.logging.Log4J2LoggerFactory
 
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
@@ -26,6 +28,10 @@ import io.netty.channel.socket.DatagramPacket
 
 import static system.ConnectionType.*
 class Client{
+    
+    static{
+        InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE)
+    }
     
     final   ReentrantLock  requestLock = new ReentrantLock()
     final   Condition      requestGet  = requestLock.newCondition()
