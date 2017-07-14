@@ -24,30 +24,27 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     protected void channelRead0(ChannelHandlerContext ctx,Map msg) throws Exception{
-        def map=msg.collectEntries{
-            if(it.key=='file'){
-                return [file:it.value.length]
-            }else{
-                return [it.key,it.value]
-            }
-        }
-        if(msg.action=='nodeReg'){
-            logger.debug("${msg.action}($map)")
+        Map map=msg.clone()
+        def action=map.action
+        map.removeAll{k,v->['action','file','attachment'].contains(k)}
+        map.remove('action');map.remove('file');map.remove('attachment')
+        logger.info("请求 action=$action params=$map")
+        if(action=='nodeReg'){
+            logger.debug("结点续命 action=$action params=$map")
         }else{
-            logger.info("${msg.action}($map)")
+            
         }
         
         try{
-            server.invokeMethod(msg.action,[ctx,msg].toArray())
+            server.invokeMethod(action,[ctx,msg].toArray())
         }catch(MissingMethodException e){
-            server.defaultMethod(msg.action,[ctx,msg].toArray())
+            server.defaultMethod(action,[ctx,msg].toArray())
         }
-        
     }
     
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
         logger.error cause.localizedMessage
-        throw cause
+        ctx.close()
     }
 }

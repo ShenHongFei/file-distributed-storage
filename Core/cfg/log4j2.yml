@@ -12,7 +12,7 @@ Configuration:
             bufferedIO: false
             bufferSize: 0
             PatternLayout:
-                Pattern: "%d{a h:mm:ss.SSS} %-5level:[%12thread]%70logger#%-20method  -- %msg %n%rException{full}"
+                Pattern: "%d{a h:mm:ss.SSS} %-5level:[%12thread]%70logger#%-20method  -- %msg%n%rException{full}"
     Loggers:
         logger:
             -

@@ -26,7 +26,7 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
     
     @Override
     void channelRead0(ChannelHandlerContext ctx,DatagramPacket msg) throws Exception{
-        
+        //todo:如果一个object分在两个DatagramPacket发送会有异常
         def byteBuf = msg.content()
         def outbytes = new ByteArrayOutputStream()
         byteBuf.getBytes(0,outbytes,byteBuf.capacity())
@@ -35,14 +35,13 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
         try {
             instream = new ObjectInputStream(bis)
             Object o = instream.readObject()
+            if(o instanceof Map){
+                Map map=o.clone()
+                def action=map.action
+                map.removeAll{k,v->['action','file','attachment'].contains(k)}
+                logger.debug("结点续命(UDP) action=$action params=$map")
+            }
             try{
-                if(o instanceof Map){
-                    if(o.action=='nodeReg'){
-                        logger.debug(o)
-                    }else{
-                        logger.info(o)
-                    }
-                }
                 server.invokeMethod(o.action,[ctx,o].toArray())
             }catch(MissingMethodException e){
                 server.defaultMethod(o.action,[ctx,o].toArray())

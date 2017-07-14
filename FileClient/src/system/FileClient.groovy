@@ -2,6 +2,7 @@ package system
 
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
+import util.Util
 
 class FileClient{
     
@@ -11,6 +12,7 @@ class FileClient{
     Properties config =new Properties()
     Client  client
     Map<String,UUID> files=[:]
+    File fileSer
     
     static void main(String... args){
         new FileClient(args[0]).run(*args[1..-1])
@@ -19,10 +21,10 @@ class FileClient{
     
     FileClient(String configLocation){
         config.load(new FileInputStream(configLocation))
-        client=new Client(config.FileServerIP,config.FileServerPort as Integer,ConnectionType.TCP,null)
-        File fileser=new File('data/files.ser')
-        if(fileser.exists()){
-            fileser.withObjectInputStream{
+        client=new Client(config.fileServerIP,config.fileServerPort as Integer,ConnectionType.TCP,null)
+        fileSer=new File('data/files.ser')
+        if(fileSer.exists()){
+            fileSer.withObjectInputStream{
                 files=it.readObject()
             }
         }
@@ -46,29 +48,43 @@ class FileClient{
         this.metaClass.getMetaMethod(args[0]).invoke(this,args[1])
     }
     
-    def upload(String path){
+    /**
+     * 向FileServer获取存储结点信息
+     * 建立到StorageNode的连接并发送上传文件请求(用于上传文件的端口号，文件大小，文件名)
+     * @StorageNode 生成 uuid，发回响应（FileReceiver的端口号），给FileReceiver设置临时文件（记录下inetAddress和临时文件的映射）
+     * new FileSender(),上传文件
+     * 等待FileSender发送完成 同时 输出进度信息
+     * @StorageNode 向FileServer发送文件信息{文件名，uuid}
+     * @FileServer 存储文件信息，向StorageNode确认
+     * @StorageNode 移动临时文件到存储文件夹
+     */
+    void upload(String path){
         client.request=[action:'selectNode']
+        //todo:FileServer失去响应后阻塞？超时时间
         def resp = client.response
         if(!resp.result){
             println resp.message
             return 
         }
-        NodeInfo nodeinfo= resp.nodeinfo
+        NodeInfo nodeInfo= resp.nodeInfo
         def file = new File(path)
-        def nodeclient=new Client(nodeinfo.address,nodeinfo.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
-            c.request=[action:'upload',name:file.name,file:file.bytes]
+        def freeport= Util.freePort
+        def nodeclient=new Client(nodeInfo.address,nodeInfo.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
+            c.request=[action:'uploadInit',senderPort:freeport,fileName:file.name,fileSize:file.size()]
         })
-        def map = nodeclient.response
-        if(!map.result){
-            println map.message
+        def nodeResponse = nodeclient.response
+        if(!nodeResponse.result){
+            println nodeResponse.message
             return
         }
-        files[file.name]=map.uuid
-        println map.uuid
+        def sender=new FileSender(nodeInfo.address,nodeResponse.receiverPort)
+        sender.send(file)
+        files[file.name]=nodeResponse.uuid
+        println nodeResponse.uuid
         saveFiles()
     }
     
-    def download(String uuidstr){
+    void download(String uuidstr){
         def uuid = UUID.fromString(uuidstr)
         client.request=[action:'getFileInfo',uuid:uuid]
         def resp = client.response
@@ -97,7 +113,7 @@ class FileClient{
         }
     }
     
-    def remove(String uuidstr){
+    void remove(String uuidstr){
         def uuid = UUID.fromString(uuidstr)
         client.request=[action:'remove',uuid:uuid]
         files.removeAll{k,v->v==uuid}
@@ -105,10 +121,12 @@ class FileClient{
         println '删除成功'
     }
     
-    def saveFiles(){
-        File fileser=new File('data/files.ser')
-        fileser.withObjectOutputStream{
+    void saveFiles(){
+        fileSer.withObjectOutputStream{
             it.writeObject(files)
         }
     }
+    
+    
+    
 }

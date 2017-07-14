@@ -25,15 +25,10 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     
     @Override
     protected void channelRead0(ChannelHandlerContext ctx,Map msg) throws Exception{
-        //todo:log
-        def map=msg.collectEntries{
-            if(it.key=='file'){
-                return [file:it.value.length]
-            }else{
-                return [it.key,it.value]
-            }
-        }
-        logger.info("$map")
+        Map map=msg.clone()
+        def action=map.action
+        map.removeAll{k,v->['action','file','attachment'].contains(k)}
+        logger.info("请求 action=$action params=$map")
         client.response=msg
     }
     
@@ -41,6 +36,6 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
         logger.error cause.localizedMessage
-        throw cause
+        ctx.close()
     }
 }
