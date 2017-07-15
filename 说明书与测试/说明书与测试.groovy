@@ -42,6 +42,14 @@ class 说明书与测试 extends Specification{
         noExceptionThrown()
     }
     
+    def 'FileClient上传大文件，有进度'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('upload','data/test-file/image.iso')
+        then:
+        noExceptionThrown()
+    }
+    
     def 'FileClient下载文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:

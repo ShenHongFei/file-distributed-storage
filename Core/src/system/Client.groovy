@@ -22,9 +22,11 @@ import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import org.apache.logging.log4j.LogManager
 
-//IMPORTANT
+import java.util.concurrent.*
+
 import static system.ConnectionType.TCP
 
+//IMPORTANT
 class Client{
     
     static final logger=LogManager.getLogger(Client)
@@ -70,6 +72,22 @@ class Client{
     void setRequest(Map req){
         requestGet=false
         if(type==TCP){
+            //断线重连
+            if(!channel.active){
+                logger.info "尝试断线重连..."
+                channel=new Bootstrap().with{
+                    group(new NioEventLoopGroup())
+                    handler(new LoggingHandler(LogLevel.DEBUG))
+                    channel(NioSocketChannel)
+                    option(ChannelOption.SO_KEEPALIVE,true)
+                    handler({Channel ch->ch.pipeline().addLast(
+                            new ObjectEncoder(),
+                            new ObjectDecoder(Integer.MAX_VALUE,ClassResolvers.cacheDisabled(null)),
+                            new ResponseHandler(this,null))
+                    } as ChannelInitializer<SocketChannel>)
+                    connect(serverSocketAddress).sync().channel()
+                }
+            }
             channel.writeAndFlush(req)
         }else{
             ByteArrayOutputStream bos = new ByteArrayOutputStream()
@@ -90,17 +108,37 @@ class Client{
     
     /**
      * [nioEventLoopGroup-2-1] [poolName-poolId-threadId]
-     * 实现条件等待：EventLoop线程收到服务器的Response并为当前对象赋值前一直阻塞
-     * 请求可能发送也可能未发送，必须保证响应一定
-     * 1.发送了请求
+     * 实现条件等待：EventLoop线程收到服务器的Response并为当前对象赋值前阻塞，直到超时,默认超时时间=5秒
      */
-    synchronized Map getResponse(){
+    Map getResponse(){
+        getResponse(5)
+    }
+    
+    synchronized Map waitResponse(){
         while(!requestGet){
             logger.debug '线程阻塞等待服务器响应'
             wait()
         }
-        response
+        this.@response
     }
+    
+    /**
+     * 等待服务器响应，自定义超时时间
+     */
+    Map getResponse(Integer timeOutSeconds){
+        ExecutorService executor = Executors.newSingleThreadExecutor()
+        Future<Map> future = executor.submit(this.&waitResponse as Callable<Map>)
+        try {
+            future.get(timeOutSeconds,TimeUnit.SECONDS)
+        } catch (TimeoutException e) {
+            future.cancel(true)
+            logger.error "等待响应 $timeOutSeconds s 后超时，强行结束"
+            throw e
+        }finally{
+            executor.shutdown()
+        }
+    }
+    
     /**
      * 由nioEventLoopGroup线程池中的线程执行
      */

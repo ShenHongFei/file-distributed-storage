@@ -69,7 +69,7 @@ class FileReceiver{
                     Map info=ctx.channel().attr(AttributeKey.valueOf('info')).get()
                     info.receivedLength+=msg.readableBytes()
                     info.fileChannel.write(msg.nioBuffer())
-                    logger.debug "已收到 $info.receivedLength 字节"
+                    logger.debug "已收到 ${Util.getHumanReadableByteCount(info.receivedLength,false)}"
                     if(info.receivedLength==info.fileSize){
                         logger.info "传输完成 文件名：$info.fileName ,文件大小:${Util.getHumanReadableByteCount(info.fileSize,false)} "
                         info.fileChannel.close()

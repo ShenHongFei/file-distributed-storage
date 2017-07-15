@@ -1,5 +1,6 @@
 package system
 
+import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
 import util.Util
@@ -68,36 +69,42 @@ class FileClient{
      * @StorageNode 移动临时文件到存储文件夹
      */
     void upload(String path){
-        client.request=[action:'selectNode']
-        //todo:FileServer失去响应后阻塞？超时时间
-        def resp = client.response
-        NodeInfo main=resp.mainNodeInfo
-        NodeInfo backup=resp.backupNodeInfo
-        if(!resp.mainNodeInfo){
-            println '当前无可用存储结点'
-            logger.warn '当前无可用存储结点'
-            client.channel.close().sync()
-            return
+        ChannelFuture clientClose
+        ChannelFuture senderClose
+        ChannelFuture nodeClientClose
+        try{
+            client.request=[action:'selectNode']
+            def resp = client.response
+            clientClose = client.channel.close()
+            NodeInfo main=resp.mainNodeInfo
+            NodeInfo backup=resp.backupNodeInfo
+            if(!resp.mainNodeInfo){
+                println '当前无可用存储结点'
+                logger.warn '当前无可用存储结点'
+                return
+            }
+            def file = new File(path)
+            def freePort= Util.freePort
+            def nodeClient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
+                c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:backup]
+            })
+            def nodeResponse = nodeClient.response
+            nodeClientClose=nodeClient.channel.close()
+            if(!nodeResponse.result){
+                println nodeResponse.message
+                return
+            }
+            def sender=new FileSender(new InetSocketAddress(main.address,nodeResponse.receiverPort),freePort)
+            sender.send(file).sync()
+            senderClose=sender.channel.close()
+            files[file.name]=nodeResponse.uuid
+            println "上传成功 文件名：${file.name}, UUID:$nodeResponse.uuid"
+            saveFiles()
+        }finally{
+            clientClose?.sync()
+            senderClose?.sync()
+            nodeClientClose?.sync()
         }
-        def file = new File(path)
-        def freePort= Util.freePort
-        def nodeClient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
-            c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:backup]
-        })
-        def nodeResponse = nodeClient.response
-        if(!nodeResponse.result){
-            println nodeResponse.message
-            return
-        }
-        def sender=new FileSender(new InetSocketAddress(main.address,nodeResponse.receiverPort),freePort)
-        //todo:异步操作，在发送文件的同时显示进度
-        sender.send(file).sync()
-        files[file.name]=nodeResponse.uuid
-        println "上传成功 文件名：${file.name}, UUID:$nodeResponse.uuid"
-        saveFiles()
-        sender.channel.close().sync()
-        nodeClient.channel.close().sync()
-        client.channel.close().sync()
     }
     
     /**

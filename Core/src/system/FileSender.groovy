@@ -11,6 +11,7 @@ import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import org.apache.logging.log4j.LogManager
+import util.Util
 
 
 /**
@@ -38,7 +39,22 @@ class FileSender{
     }
     
     ChannelFuture send(File file){
-        channel.writeAndFlush(new DefaultFileRegion(file,0,file.size())).addListener({ChannelFuture future->future.channel().close()})
+        channel.writeAndFlush(new DefaultFileRegion(file,0,file.size()), channel.newProgressivePromise()).addListener(new ChannelProgressiveFutureListener() {
+            void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
+                def totalString=Util.getHumanReadableByteCount(total,false)
+                def progressString=Util.getHumanReadableByteCount(progress,false)
+                if (total < 0) {
+                    println("发送进度: $progressString")
+                }else {
+                    println("发送进度: ${Math.floor(progress/total*100)}%  $progressString/$totalString")
+                }
+            }
+    
+            void operationComplete(ChannelProgressiveFuture future) {
+                println  "发送完成"
+                future.channel().close()
+            }
+        })
     }
     
 }

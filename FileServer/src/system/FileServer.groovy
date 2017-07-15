@@ -13,12 +13,14 @@ class FileServer{
     File                 fileser   = new File('data/FileServer/files.ser')
     Map<String,NodeInfo> nodes     = [:]
     Map<UUID,FileInfo>   files     = [:]
+    File dataDir=new File('data/FileServer')
     
     static void main(String[] args){
         new FileServer().run()
     }
     
     FileServer(){
+        dataDir.mkdir()
         if(fileser.exists()){
             fileser.withObjectInputStream{
                 files=it.readObject()
