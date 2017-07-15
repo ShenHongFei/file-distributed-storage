@@ -36,6 +36,5 @@ class ResponseHandler extends SimpleChannelInboundHandler<Map>{
     @Override
     void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
         logger.error cause.localizedMessage
-        ctx.close()
     }
 }

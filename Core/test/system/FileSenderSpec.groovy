@@ -3,7 +3,7 @@ package system
 import spock.lang.Specification
 
 class FileSenderSpec extends Specification{
-    def '启动并发送一个文件'(){
+    /*def '启动并发送一个文件'(){
         expect:
 //        def start=System.currentTimeMillis()
         new FileSender('localhost',7080).with{
@@ -12,5 +12,5 @@ class FileSenderSpec extends Specification{
         }
         
 //        println((System.currentTimeMillis()-start)/1000)
-    }
+    }*/
 }

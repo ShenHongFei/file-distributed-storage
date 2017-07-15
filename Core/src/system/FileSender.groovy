@@ -8,7 +8,6 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.stream.ChunkedWriteHandler
-import io.netty.util.internal.SocketUtils
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import org.apache.logging.log4j.LogManager
@@ -24,22 +23,22 @@ class FileSender{
         InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE)
     }
           Channel           channel
-          InetSocketAddress serverSocketAddress
+          InetSocketAddress receiverSocketAddress
     
-    FileSender(String receiverAddress,Integer receiverPort,Integer localPort){
-        serverSocketAddress=SocketUtils.socketAddress(receiverAddress,receiverPort)
+    FileSender(InetSocketAddress receiverSocketAddress,Integer localPort){
+        this.receiverSocketAddress=receiverSocketAddress
         channel=new Bootstrap().with{
             group(new NioEventLoopGroup())
             handler(new LoggingHandler(LogLevel.DEBUG))
             channel(NioSocketChannel)
             option(ChannelOption.SO_KEEPALIVE,false)
             handler({Channel ch -> ch.pipeline().addLast(new ChunkedWriteHandler())} as ChannelInitializer<SocketChannel>)
-            connect(serverSocketAddress,new InetSocketAddress(localPort)).sync().channel()
+            connect(receiverSocketAddress,new InetSocketAddress(localPort)).sync().channel()
         }
     }
     
     ChannelFuture send(File file){
-        channel.writeAndFlush(new DefaultFileRegion(file,0,file.size()))
+        channel.writeAndFlush(new DefaultFileRegion(file,0,file.size())).addListener({ChannelFuture future->future.channel().close()})
     }
     
 }

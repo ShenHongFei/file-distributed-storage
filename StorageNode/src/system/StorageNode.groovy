@@ -19,6 +19,7 @@ class StorageNode{
     FileReceiver receiver=new FileReceiver(0)
     Server       server
     NodeInfo     nodeInfo
+    Map<UUID,ServerSocket> senderSockets =[:]
     
     static void main(String... args){
         new StorageNode(args[0]).run()
@@ -80,17 +81,31 @@ class StorageNode{
                 println nodeResponse.message
                 return
             }
-            def sender=new FileSender(backup.address,nodeResponse.receiverPort,freePort)
+            def sender=new FileSender(new InetSocketAddress(backup.address,nodeResponse.receiverPort),freePort)
             sender.send(file)
             logger.info "正在备份文件 $nodeResponse.uuid 至备份结点 $backup"
         }
         client.request=[action:'addFile',uuid:info.uuid,nodeInfo:nodeInfo,fileName:info.fileName,fileSize:info.fileSize]
     }
     
+    void downloadInit(ChannelHandlerContext ctx,Map map){
+        def socket = new ServerSocket(0)
+        senderSockets[map.uuid]=socket
+        ctx.writeAndFlush([result:true,senderPort:socket.localPort])
+    }
     
+    void download(ChannelHandlerContext ctx,Map map){
+        def socket = senderSockets[map.uuid]
+        def localPort= socket.localPort
+        socket.close()
+        //todo:如何保证该端口不被重新占用？
+        def remoteAddress = ctx.channel().remoteAddress() as InetSocketAddress
+        def sender=new FileSender(new InetSocketAddress(remoteAddress.address,map.receiverPort),localPort)
+        sender.send(new File(fileDir,map.uuid.toString()))
+    }
     
     def remove(ChannelHandlerContext ctx,Map map){
-        new File(dataDir,"$map.uuid").delete()
+        new File(fileDir,"$map.uuid").delete()
     }
     
 }

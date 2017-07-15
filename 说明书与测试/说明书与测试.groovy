@@ -10,6 +10,14 @@ class 说明书与测试 extends Specification{
     @Shared StorageNode storageNode1
     @Shared StorageNode storageNode2
     
+    def '运行服务器'(){
+        fileServer=new FileServer()
+        when:
+        fileServer.run()
+        then:
+        noExceptionThrown()
+    }
+    
     def '运行StorageNode1'(){
         storageNode1=new StorageNode('cfg/StorageNode/StorageNode1.properties')
         when:
@@ -26,19 +34,26 @@ class 说明书与测试 extends Specification{
         noExceptionThrown()
     }
     
-    def '运行服务器'(){
-        fileServer=new FileServer()
-        when:
-        fileServer.run()
-        then:
-        noExceptionThrown()
-    }
-    
-    
     def 'FileClient上传文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:
         fileClient.run('upload','data/test-file/灰色鲨鱼.png')
+        then:
+        noExceptionThrown()
+    }
+    
+    def 'FileClient下载文件'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('download',fileClient.files.iterator().next().value.toString())
+        then:
+        noExceptionThrown()
+    }
+    
+    def 'FileClient删除文件'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('remove',fileClient.files.iterator().next().value.toString())
         then:
         noExceptionThrown()
     }

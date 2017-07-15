@@ -28,11 +28,11 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
         def action=map.action
         map.removeAll{k,v->['action','file','attachment'].contains(k)}
         map.remove('action');map.remove('file');map.remove('attachment')
-        logger.info("请求 action=$action params=$map")
+        
         if(action=='nodeReg'){
             logger.debug("结点续命 action=$action params=$map")
         }else{
-            
+            logger.info("请求 action=$action params=$map")
         }
         
         try{

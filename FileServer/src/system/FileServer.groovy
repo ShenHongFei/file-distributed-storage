@@ -1,5 +1,6 @@
 package system
 
+import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
 
@@ -63,23 +64,38 @@ class FileServer{
         saveFiles()
     }
     
-    
+    /**
+     * 由于files中的文件对应的结点信息NodeInfo可能是从文件中加载而得，
+     * 返回给FileClient时需根据nodes刷新NodeInfo
+     */
     def getFileInfo(ChannelHandlerContext ctx,Map map){
-        ctx.writeAndFlush([result:true,fileinfo:files[map.uuid]])
+        def fileInfo = files[map.uuid]
+        if(!fileInfo){
+            logger.warn "uuid=$map.uuid 的文件不存在"
+            ctx.writeAndFlush([result:false,message:"uuid=$map.uuid 的文件不存在"])
+        }
+        if(fileInfo.main) fileInfo.main=nodes[fileInfo.main.name]
+        if(fileInfo.backup) fileInfo.backup=nodes[fileInfo.backup.name]
+        logger.info "请求文件存储结点信息 ${fileInfo}"
+        ctx.writeAndFlush([result:true,fileinfo:fileInfo])
+        saveFiles()
     }
     
     def remove(ChannelHandlerContext ctx,Map map){
         FileInfo fileInfo=files[map.uuid]
         def main = fileInfo.main
-        def backup=fileInfo?.backup
-        def mainclient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
-            ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
-        })
-        if(backup){
-            def backupclient=new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
-                ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
+        def backup=fileInfo.backup
+        try{
+            if(main) new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
+                ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid]).addListener({ChannelFuture future->future.channel().close()})
             })
-        }
+            if(backup){
+                new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
+                    ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid]).addListener({ChannelFuture future->future.channel().close()})
+                })
+            }
+        }catch(any){}
+        
         files.remove(map.uuid)
         saveFiles()
     }
