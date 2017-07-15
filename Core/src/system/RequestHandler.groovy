@@ -41,10 +41,4 @@ class RequestHandler extends SimpleChannelInboundHandler<Map>{
             server.defaultMethod(action,[ctx,msg].toArray())
         }
     }
-    
-    @Override
-    void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
-        logger.error cause.localizedMessage
-        ctx.close()
-    }
 }

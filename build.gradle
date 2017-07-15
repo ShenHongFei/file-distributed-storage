@@ -9,16 +9,40 @@ buildscript {
     }
 }
 
-subprojects{ subproject->
+allprojects{
     apply plugin:'groovy'
     apply plugin:'application'
-    apply plugin:'com.github.johnrengelman.shadow'
     
     repositories {
         mavenLocal()
         jcenter()
         mavenCentral()
     }
+    
+    dependencies{
+        compile 'org.codehaus.groovy:groovy-all:+'
+        
+        compile 'io.netty:netty-all:4.1.12.Final'
+        
+        //日志
+        compile 'org.apache.logging.log4j:log4j-api:+'
+        compile 'org.apache.logging.log4j:log4j-core:+'
+        compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:+'
+        compile 'com.fasterxml.jackson.core:jackson-databind:+'
+        
+        testCompile 'org.spockframework:spock-core:+'
+    
+    }
+    
+    compileGroovy{
+        options.encoding='UTF-8'
+    }
+    
+    System.setProperty('file.encoding', 'UTF-8')
+}
+
+subprojects{ subproject->
+    apply plugin:'com.github.johnrengelman.shadow'
     
     sourceSets{
         main{
@@ -42,30 +66,12 @@ subprojects{ subproject->
     mainClassName=subproject.name
     
     dependencies{
-        compile 'org.codehaus.groovy:groovy-all:+'
-        
-        compile 'io.netty:netty-all:4.1.12.Final'
-        
-        //日志
-        compile 'org.apache.logging.log4j:log4j-api:+'
-        compile 'org.apache.logging.log4j:log4j-core:+'
-        compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:+'
-        compile 'com.fasterxml.jackson.core:jackson-databind:+'
-    
-    
-        if(subproject.name!='Core'){
-            compile project(':Core')
-            if(subproject.name!='StorageNode'){
-                compile project(':StorageNode')
-            }
+        //子项目依赖 Core <- StorageNode <- FileServer <- FileClient
+        switch(subproject.name){
+            case 'StorageNode':compile project(':Core');break
+            case 'FileServer':compile project(':StorageNode');break
+            case 'FileClient':compile project(':FileServer');break
         }
-        
-    
-        testCompile 'org.spockframework:spock-core:+'
-    }
-    
-    compileGroovy{
-        options.encoding='UTF-8'
     }
     
     shadowJar{
@@ -77,8 +83,25 @@ subprojects{ subproject->
             }
         }
     }
-    
-    System.setProperty('file.encoding', 'UTF-8')
+}
+
+dependencies{
+    compile project(':FileClient')
+}
+
+/*compileTestGroovy {
+    source = fileTree(dir: projectDir).matching { include '*.groovy' }
+}*/
+
+sourceSets{
+    test{
+        groovy{
+            srcDirs=['说明书与测试']
+        }
+        resources{
+            srcDirs=['cfg']
+        }
+    }
 }
 
 wrapper{

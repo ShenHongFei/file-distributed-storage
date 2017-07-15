@@ -1,5 +1,6 @@
 package system
 
+import groovy.time.TimeCategory
 import groovy.transform.ToString
 
 @ToString(includeNames = true)
@@ -13,6 +14,12 @@ class NodeInfo implements Comparable,Serializable{
     
     @Override
     int compareTo(Object o){
-        return this.ratio-o.ratio
+        (this.ratio-o.ratio) as Integer
+    }
+    
+    Boolean isAliveNow(){
+        use(TimeCategory){
+            (alive<=>30.seconds.ago)>0
+        }
     }
 }

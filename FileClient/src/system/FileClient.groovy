@@ -22,7 +22,7 @@ class FileClient{
     FileClient(String configLocation){
         config.load(new FileInputStream(configLocation))
         client=new Client(config.fileServerIP,config.fileServerPort as Integer,ConnectionType.TCP,null)
-        fileSer=new File('data/files.ser')
+        fileSer=new File('data/FileClient/files.ser')
         if(fileSer.exists()){
             fileSer.withObjectInputStream{
                 files=it.readObject()
@@ -32,7 +32,7 @@ class FileClient{
     
     def run(String... args){
         if(!args){
-            println '''
+            println('''
             上传文件
             java -jar FileClient.jar 配置文件 upload afile
             该程序输出一个新存储文件的uuid，就是在服务器端保存的文件的唯一标识。
@@ -42,7 +42,7 @@ class FileClient{
             
             删除文件
             java -jar FileClient.jar 配置文件 remove uuid
-            '''.stripMargin()
+            '''.stripMargin(' '))
             return
         }
         this.metaClass.getMetaMethod(args[0]).invoke(this,args[1])
@@ -50,7 +50,7 @@ class FileClient{
     
     /**
      * 向FileServer获取存储结点信息
-     * 建立到StorageNode的连接并发送上传文件请求(用于上传文件的端口号，文件大小，文件名)
+     * 建立到StorageNode的连接并发送上传文件请求(用于上传文件的端口号，文件大小，文件名,isBackup,[backupNodeInfo])
      * @StorageNode 生成 uuid，发回响应（FileReceiver的端口号），给FileReceiver设置临时文件（记录下inetAddress和临时文件的映射）
      * new FileSender(),上传文件
      * 等待FileSender发送完成 同时 输出进度信息
@@ -62,26 +62,31 @@ class FileClient{
         client.request=[action:'selectNode']
         //todo:FileServer失去响应后阻塞？超时时间
         def resp = client.response
-        if(!resp.result){
-            println resp.message
-            return 
+        NodeInfo main=resp.mainNodeInfo
+        NodeInfo backup=resp.backupNodeInfo
+        if(!resp.mainNodeInfo){
+            println '当前无可用存储结点'
+            return
         }
-        NodeInfo nodeInfo= resp.nodeInfo
         def file = new File(path)
-        def freeport= Util.freePort
-        def nodeclient=new Client(nodeInfo.address,nodeInfo.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
-            c.request=[action:'uploadInit',senderPort:freeport,fileName:file.name,fileSize:file.size()]
+        def freePort= Util.freePort
+        def nodeClient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
+            c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:backup]
         })
-        def nodeResponse = nodeclient.response
+        def nodeResponse = nodeClient.response
         if(!nodeResponse.result){
             println nodeResponse.message
             return
         }
-        def sender=new FileSender(nodeInfo.address,nodeResponse.receiverPort)
-        sender.send(file)
+        def sender=new FileSender(main.address,nodeResponse.receiverPort,freePort)
+        //todo:异步操作，在发送文件的同时显示进度
+        sender.send(file).sync()
         files[file.name]=nodeResponse.uuid
         println nodeResponse.uuid
         saveFiles()
+        sender.channel.close().sync()
+        nodeClient.channel.close().sync()
+        client.channel.close().sync()
     }
     
     void download(String uuidstr){
@@ -127,6 +132,8 @@ class FileClient{
         }
     }
     
-    
+    void waitCommand(t){
+        client.channel.closeFuture().sync()
+    }
     
 }

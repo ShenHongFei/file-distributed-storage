@@ -1,11 +1,11 @@
 package system
 
 import com.sun.istack.internal.Nullable
-import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
-//!不是JDK中的DatagramPacket
 import io.netty.channel.socket.DatagramPacket
+
+//!不是JDK中的DatagramPacket
 import org.apache.logging.log4j.LogManager
 
 class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
@@ -53,13 +53,5 @@ class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
                 }
             } catch (IOException ex) { }
         }
-    
-    }
-    
-    
-    @Override
-    void exceptionCaught(ChannelHandlerContext ctx,Throwable cause) throws Exception{
-        logger.error cause.localizedMessage
-        throw cause
     }
 }

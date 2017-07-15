@@ -13,8 +13,6 @@ import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import org.apache.logging.log4j.LogManager
 
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
 
 /**
  * 基于TCP连接，负责文件实际传输，进度记录
@@ -28,15 +26,15 @@ class FileSender{
           Channel           channel
           InetSocketAddress serverSocketAddress
     
-    FileSender(String serverAddress,Integer serverPort){
-        serverSocketAddress=SocketUtils.socketAddress(serverAddress,serverPort)
+    FileSender(String receiverAddress,Integer receiverPort,Integer localPort){
+        serverSocketAddress=SocketUtils.socketAddress(receiverAddress,receiverPort)
         channel=new Bootstrap().with{
             group(new NioEventLoopGroup())
             handler(new LoggingHandler(LogLevel.DEBUG))
             channel(NioSocketChannel)
             option(ChannelOption.SO_KEEPALIVE,false)
             handler({Channel ch -> ch.pipeline().addLast(new ChunkedWriteHandler())} as ChannelInitializer<SocketChannel>)
-            connect(serverSocketAddress).sync().channel()
+            connect(serverSocketAddress,new InetSocketAddress(localPort)).sync().channel()
         }
     }
     

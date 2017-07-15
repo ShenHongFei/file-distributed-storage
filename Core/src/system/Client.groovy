@@ -8,6 +8,7 @@ import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.DatagramPacket
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -16,18 +17,14 @@ import io.netty.handler.codec.serialization.ObjectDecoder
 import io.netty.handler.codec.serialization.ObjectEncoder
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.internal.SocketUtils
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 import org.apache.logging.log4j.LogManager
 
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
 //IMPORTANT
-import io.netty.channel.socket.DatagramPacket
+import static system.ConnectionType.TCP
 
-import static system.ConnectionType.*
 class Client{
     
     static final logger=LogManager.getLogger(Client)
@@ -71,6 +68,7 @@ class Client{
     }
     
     void setRequest(Map req){
+        requestGet=false
         if(type==TCP){
             channel.writeAndFlush(req)
         }else{
@@ -88,7 +86,6 @@ class Client{
                 } catch (IOException ex) { }
             }
         }
-        requestGet=false
     }
     
     /**

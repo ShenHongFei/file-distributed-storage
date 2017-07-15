@@ -1,6 +1,5 @@
 package system
 
-import groovy.time.TimeCategory
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
 
@@ -10,7 +9,7 @@ class FileServer{
     
     Server               server    = new Server(this,8080,ConnectionType.TCP,null)
     Server               udpServer = new Server(this,8081,ConnectionType.UDP,null)
-    File                 fileser   = new File('data/files.ser')
+    File                 fileser   = new File('data/FileServer/files.ser')
     Map<String,NodeInfo> nodes     = [:]
     Map<UUID,FileInfo>   files     = [:]
     
@@ -31,58 +30,39 @@ class FileServer{
     }
     
     
-    def nodeReg(ChannelHandlerContext ctx,Map map){
+    void nodeReg(ChannelHandlerContext ctx,Map map){
         nodes[map.nodeInfo.name]=map.nodeInfo
     }
-    
+    /**
+     * 选择主存结点和备份结点
+     * 用nodes.value排序,大小比较由NodeInfo实现
+     */
     void selectNode(ChannelHandlerContext ctx,Map map){
-        NodeInfo best=nodes.findAll{k,v->
-            use(TimeCategory){
-                v.alive>30.seconds.ago
-            }
-        }.min{a,b->a.value<=>b.value}?.value
-        println best
-        if(!best){
-            ctx.channel().writeAndFlush([result:false,message:'当前无可用存储节点'])
-            return
+        NodeInfo main=null
+        NodeInfo backup=null
+        nodes.findAll{it.value.aliveNow}.toSorted{it.value}.iterator().with{
+            if(it.hasNext()) main=next().value
+            if(it.hasNext()) backup=next().value
         }
-        ctx.channel().writeAndFlush([result:true,nodeInfo:best])
-        
-        /*ctx.channel().writeAndFlush([result:false,nodeInfo:best]).addListener(new ChannelFutureListener(){
-            @Override
-            void operationComplete(ChannelFuture future) throws Exception{
-                if(future.success){
-                    println 'success'
-                }else{
-                    println 'failed'
-                }
-            }
-        })*/
-        
+        logger.debug "主结点：$main"
+        logger.debug "备份结点：$backup"
+        ctx.channel().writeAndFlush([result:true,mainNodeInfo:main,backupNodeInfo:backup])
     }
     
-    def addFile(ChannelHandlerContext ctx,Map map){
-        files[map.uuid]=new FileInfo(uuid:map.uuid,main:map.nodeInfo,name:map.name,size:map.size)
-        NodeInfo best=nodes.findAll{k,v->
-            k!=map.nodeInfo.name&&
-            use(TimeCategory){
-                v.alive>30.seconds.ago
-            }
-        }.min{a,b->a.value<=>b.value}?.value
-        println best
-        if(!best){
-            ctx.channel().writeAndFlush([result:false,message:'当前无可用备份节点'])
-            saveFiles()
-            return
+    /**
+     * 根据uuid对应FileInfo是否已存在来决定此NodeInfo的类型
+     */
+    void addFile(ChannelHandlerContext ctx,Map map){
+        if(!files[map.uuid]){
+            files[map.uuid]=new FileInfo(uuid:map.uuid,main:map.nodeInfo,name:map.fileName,size: map.fileSize)
+            logger.info "新增文件 ${files[map.uuid]}"
+        }else{
+            files[map.uuid].backup=map.nodeInfo
+            logger.info "新增备份结点 文件:${map.uuid} 结点：$map.nodeInfo"
         }
-        ctx.channel().writeAndFlush([result:true,nodeInfo:best])
         saveFiles()
     }
     
-    def addBackup(ChannelHandlerContext ctx,Map map){
-        files[map.uuid].backup=map.nodeInfo
-        saveFiles()
-    }
     
     def getFileInfo(ChannelHandlerContext ctx,Map map){
         ctx.writeAndFlush([result:true,fileinfo:files[map.uuid]])
@@ -97,7 +77,6 @@ class FileServer{
         })
         if(backup){
             def backupclient=new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ct->
-                //todo:为什么不能用c.request=xxx
                 ct.writeAndFlush([action:'remove',uuid:fileInfo.uuid])
             })
         }
