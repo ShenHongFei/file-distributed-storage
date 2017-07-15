@@ -40,7 +40,7 @@ class FileClient{
         }
     }
     
-    def run(String... args){
+    void run(String... args){
         if(!args){
             println('''
             上传文件
@@ -180,7 +180,7 @@ class FileClient{
         client.channel.close().sync()
     }
     
-    synchronized downloadFinished(Map info){
+    synchronized void downloadFinished(Map info){
         def tempFile=info.tempFile
         if(tempFile.size()!=info.fileSize){
             println '下载失败'
@@ -210,6 +210,13 @@ class FileClient{
     
     void waitCommand(t){
         client.channel.closeFuture().sync()
+    }
+    
+    /**
+     * 显示本地文件及uuid
+     */
+    void displayLocalFiles(){
+        //todo @yyt
     }
     
 }
