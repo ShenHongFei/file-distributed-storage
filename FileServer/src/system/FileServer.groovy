@@ -8,9 +8,9 @@ class FileServer{
     
     static logger=LogManager.getLogger(FileServer)
     
-    Server               server    = new Server(this,8080,ConnectionType.TCP,null)
+    def               server    = new Server(this,8080,ConnectionType.TCP,null)
     Server               udpServer = new Server(this,8081,ConnectionType.UDP,null)
-    File                 fileser   = new File('data/FileServer/files.ser')
+    File                 fileser   = new File('data/FileServer/files.dat')
     Map<String,NodeInfo> nodes     = [:]
     Map<UUID,FileInfo>   files     = [:]
     File dataDir=new File('data/FileServer')
@@ -34,7 +34,7 @@ class FileServer{
     
     
     void nodeReg(ChannelHandlerContext ctx,Map map){
-        nodes[map.nodeInfo.name]=map.nodeInfo
+        nodes.put(map.nodeInfo.name,map.nodeInfo)
     }
     /**
      * 选择主存结点和备份结点
@@ -43,6 +43,7 @@ class FileServer{
     void selectNode(ChannelHandlerContext ctx,Map map){
         NodeInfo main=null
         NodeInfo backup=null
+        map.fileSize
         nodes.findAll{it.value.aliveNow}.toSorted{it.value}.iterator().with{
             if(it.hasNext()) main=next().value
             if(it.hasNext()) backup=next().value

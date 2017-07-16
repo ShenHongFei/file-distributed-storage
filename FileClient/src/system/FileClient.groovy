@@ -73,7 +73,8 @@ class FileClient{
         ChannelFuture senderClose
         ChannelFuture nodeClientClose
         try{
-            client.request=[action:'selectNode']
+            def file = new File(path)
+            client.request=[action:'selectNode',fileSize:file.size()]
             def resp = client.response
             clientClose = client.channel.close()
             NodeInfo main=resp.mainNodeInfo
@@ -83,7 +84,6 @@ class FileClient{
                 logger.warn '当前无可用存储结点'
                 return
             }
-            def file = new File(path)
             def freePort= Util.freePort
             def nodeClient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
                 c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:backup]
