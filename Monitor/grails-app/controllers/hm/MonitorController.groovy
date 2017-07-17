@@ -4,5 +4,9 @@ class MonitorController{
     
     static responseFormats = ['gsp']
     
+    def index(){
+        
+    }
+    
 }
 

@@ -11,10 +11,12 @@ class Application extends GrailsAutoConfiguration {
     public static def fileTimeFormat=new SimpleDateFormat('yyyy-MM-dd-a-h-mm',Locale.CHINA)
     
 public static File projectDir
+    public static File webDir
         
     static{
         projectDir=new File(System.properties['user.dir'] as String)
         println "当前路径： $projectDir.absolutePath"
+        (webDir=new File(projectDir,'web')).mkdir()
     }
     
     @Override

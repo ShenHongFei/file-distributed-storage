@@ -6,13 +6,14 @@ buildscript {
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
-        classpath "org.grails.plugins:views-gradle:1.1.6"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
     }
 }
 
 group "HM"
 
 apply plugin:'org.grails.grails-web'
+apply plugin:'asset-pipeline'
 apply plugin:'org.grails.grails-gsp'
 
 repositories {
@@ -42,6 +43,7 @@ dependencies {
     compile 'org.grails:grails-web-boot'
     compile 'org.grails:grails-logging'
     
+    compile 'org.grails.plugins:gsp'
     compile 'org.grails.plugins:cache'
     compile 'org.grails.plugins:async'
     compile 'org.grails.plugins:events'
@@ -52,6 +54,8 @@ dependencies {
     console 'org.grails:grails-console'
 
     runtime 'org.apache.tomcat:tomcat-jdbc'
+    runtime "org.glassfish.web:el-impl:2.1.2-b03"
+    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.2"
     
     testCompile 'org.grails:grails-plugin-testing'
     testCompile 'org.grails.plugins:geb'
@@ -68,7 +72,9 @@ springBoot {
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
     jvmArgs('-Dfile.encoding=UTF-8')
-    systemProperties=System.properties
+    jvmArgs('-Dclient.encoding.override=UTF-8')
+    
+//    systemProperties.System.properties
     addResources = true
 }
 
