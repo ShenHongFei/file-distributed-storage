@@ -1,6 +1,6 @@
 server:
     contextPath: /
-    port: 8080
+    port: 8070
     compression:
         enabled: true
     tomcat:

@@ -1,1 +1,2 @@
 include 'Core','FileClient','FileServer','Monitor','StorageNode'
+rootProject.name='大作业'

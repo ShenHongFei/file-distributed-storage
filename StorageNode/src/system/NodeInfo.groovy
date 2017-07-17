@@ -9,7 +9,8 @@ class NodeInfo implements Comparable,Serializable{
     String  address
     Integer port
     Double  ratio = 0
-    Long totalSize
+    Long totalSize=0
+    Long usedSize=0
     Date    alive
     
     

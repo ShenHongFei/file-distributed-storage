@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
@@ -81,25 +81,18 @@
                             </tr>
                             </thead>
                             <tbody>
-                                <tr class="odd gradeX">
-                                    <td>Trident</td>
-                                    <td>Internet Explorer 4.0</td>
-                                    <td>Win 95+</td>
-                                    <td class="center">4</td>
-                                    <td class="center">X</td>
-                                    <td class="center">X</td>
-                                    <td class="center">X</td>
+                            <g:set var="count" value="${0}"/>
+                            <g:each in="${nodes.values()}" var="node">
+                                <tr class="${count++%2?'even':'odd'} gradeX">
+                                    <td>${node.name}</td>
+                                    <td>${node.address}</td>
+                                    <td>${node.port}</td>
+                                    <td class="center">${node.aliveNow?'在线':'离线'}</td>
+                                    <td class="center">${node.ratio}</td>
+                                    <td class="center">${node.usedSize}</td>
+                                    <td class="center">${node.totalSize}</td>
                                 </tr>
-                                <tr class="even gradeX">
-                                    <td>Trident</td>
-                                    <td>Internet Explorer 4.0</td>
-                                    <td>Win 95+</td>
-                                    <td class="center">4</td>
-                                    <td class="center">X</td>
-                                    <td class="center">X</td>
-                                    <td class="center">X</td>
-                                </tr>
-
+                            </g:each>
                             </tbody>
                         </table>
                     </div>

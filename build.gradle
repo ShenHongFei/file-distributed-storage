@@ -1,11 +1,16 @@
 buildscript {
     repositories {
+        mavenLocal()
+        maven { url "https://repo.grails.org/grails/core" }
         maven {
             url "https://plugins.gradle.org/m2/"
         }
     }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
     }
 }
 
@@ -42,6 +47,7 @@ allprojects{
 }
 
 subprojects{ subproject->
+    if(subproject.name=='Monitor') return 
     apply plugin:'com.github.johnrengelman.shadow'
     
     sourceSets{
@@ -71,6 +77,7 @@ subprojects{ subproject->
             case 'StorageNode':compile project(':Core');break
             case 'FileServer':compile project(':StorageNode');break
             case 'FileClient':compile project(':FileServer');break
+            case 'Monitor':compile project(':Core');break
         }
     }
     
@@ -106,4 +113,94 @@ sourceSets{
 
 wrapper{
     gradleVersion = '4.0'
+}
+
+project('Monitor'){
+    group "HM"
+    
+    apply plugin:'org.grails.grails-web'
+    apply plugin:'asset-pipeline'
+    apply plugin:'org.grails.grails-gsp'
+    
+    mainClassName='hm.Application'
+    
+    findMainClass{
+        setMainClassName('hm.Application')
+    }
+    
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    
+    dependencies {
+        compile project(':FileServer')
+        
+        compile 'io.netty:netty-all:4.1.12.Final'
+        
+        //日志
+        compile 'org.apache.logging.log4j:log4j-api:+'
+        compile 'org.apache.logging.log4j:log4j-core:+'
+        compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:+'
+        compile 'com.fasterxml.jackson.core:jackson-databind:+'
+        
+        testCompile 'org.spockframework:spock-core:+'
+        
+        profile "org.grails.profiles:web"
+        
+        compile 'org.springframework.boot:spring-boot-starter-logging'
+        compile 'org.springframework.boot:spring-boot-autoconfigure'
+        compile 'org.springframework.boot:spring-boot-starter-actuator'
+        compile 'org.springframework.boot:spring-boot-starter-tomcat'
+        
+        compile 'org.grails:grails-core'
+        compile "org.grails:grails-dependencies"
+        compile 'org.grails:grails-plugin-url-mappings'
+        compile "org.grails:grails-plugin-gsp"
+        compile 'org.grails:grails-plugin-codecs'
+        compile 'org.grails:grails-plugin-interceptors'
+        compile 'org.grails:grails-plugin-services'
+        compile 'org.grails:grails-plugin-datasource'
+        compile 'org.grails:grails-plugin-databinding'
+        compile 'org.grails:grails-web-boot'
+        compile 'org.grails:grails-logging'
+        
+        compile 'org.grails.plugins:gsp'
+        compile 'org.grails.plugins:cache'
+        compile 'org.grails.plugins:async'
+        compile 'org.grails.plugins:events'
+        compile 'org.grails.plugins:hibernate5'
+        
+        compile 'org.hibernate:hibernate-core:5.1.5.Final'
+        compile 'com.h2database:h2'
+        console 'org.grails:grails-console'
+        
+        runtime 'org.apache.tomcat:tomcat-jdbc'
+        runtime "org.glassfish.web:el-impl:2.1.2-b03"
+        runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.2"
+        
+        testCompile 'org.grails:grails-plugin-testing'
+        testCompile 'org.grails.plugins:geb'
+        testRuntime 'org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1'
+        testRuntime 'net.sourceforge.htmlunit:htmlunit:2.18'
+    }
+    
+    springBoot {
+        // Enable the creation of a fully
+        // executable archive file.
+        executable = true
+    }
+    
+    run{
+        jvmArgs('-Dspring.output.ansi.enabled=always')
+        jvmArgs('-Dclient.encoding.override=UTF-8')
+        jvmArgs('-Dfile.encoding=UTF-8')
+    }
+    
+    compileGroovy{
+        options.encoding='UTF-8'
+    }
+    
+    System.setProperty('file.encoding', 'UTF-8')
 }

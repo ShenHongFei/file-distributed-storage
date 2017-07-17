@@ -1,6 +1,5 @@
 package system
 
-import com.sun.istack.internal.Nullable
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
@@ -26,6 +25,7 @@ import java.util.concurrent.*
 
 import static system.ConnectionType.TCP
 
+
 //IMPORTANT
 class Client{
     
@@ -44,7 +44,7 @@ class Client{
     /**
      * @param initAction 连接建立后执行，闭包参数为 Client ..,ChannelHandlerContext ..
      */
-    Client(String serverAddress,Integer serverPort,ConnectionType type,@Nullable Closure initAction,ChannelHandler... extraHandlers){
+    Client(String serverAddress,Integer serverPort,ConnectionType type=TCP,Closure initAction=null,ChannelHandler... extraHandlers=null){
         serverSocketAddress=SocketUtils.socketAddress(serverAddress,serverPort)
         this.type=type
         channel=new Bootstrap().with{

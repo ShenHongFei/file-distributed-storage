@@ -3,7 +3,7 @@ package hm
 class UrlMappings {
     
     static mappings = {
-        "/"(view:"/index")
+        "/"(controller: 'monitor',action:'index')
         "500"(view:'/error')
         "404"(view:'/notFound')
         '/**'(controller:'resource',action:'get')

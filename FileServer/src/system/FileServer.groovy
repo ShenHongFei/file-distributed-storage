@@ -108,4 +108,8 @@ class FileServer{
             it.writeObject(files)
         }
     }
+    
+    def getStatus(ChannelHandlerContext ctx,Map map){
+        ctx.writeAndFlush([nodes:nodes,files:files])
+    }
 }
