@@ -1,0 +1,112 @@
+server:
+    contextPath: /
+    port: 8080
+    compression:
+        enabled: true
+    tomcat:
+      uri-encoding: UTF-8
+
+---
+info:
+    app:
+        name: '@info.app.name@'
+        version: '@info.app.version@'
+        grailsVersion: '@info.app.grailsVersion@'
+
+spring:
+    main:
+        banner-mode: console
+    groovy:
+        template:
+            check-template-location: false
+    profiles: 
+
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+    enabled: false
+    jmx:
+        enabled: true
+        
+---
+grails:
+    web:
+        url:
+            converter: hyphenated  
+    urlmapping:
+        cache:
+            maxsize: 1000
+    controllers:
+        defaultScope: singleton
+        upload:
+            maxFileSize: 500000000
+            maxRequestSize: 500000000
+    converters:
+        encoding: UTF-8
+    mime:
+        disable:
+            accept:
+                header:
+                    userAgents:
+                        - Gecko
+                        - WebKit
+                        - Presto
+                        - Trident
+        types:
+            json:
+              - application/json
+              - text/json   
+            hal:
+              - application/hal+json
+              - application/hal+xml  
+            xml:
+              - text/xml
+              - application/xml                                 
+            atom: application/atom+xml
+            css: text/css
+            csv: text/csv
+            js: text/javascript
+            rss: application/rss+xml
+            text: text/plain
+            all: '*/*'
+
+---
+#dataSource:
+#    driverClassName: org.h2.Driver
+#    url: jdbc:h2:file:./data/db/HM;AUTO_SERVER=TRUE;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+#    dbCreate: update
+#    username: root
+#    password: 4545
+#    pooled: true
+#    jmxExport: true
+#    properties:
+#        jmxEnabled: true
+#        initialSize: 5
+#        maxActive: 50
+#        minIdle: 5
+#        maxIdle: 25
+#        maxWait: 10000
+#        maxAge: 600000
+#        timeBetweenEvictionRunsMillis: 5000
+#        minEvictableIdleTimeMillis: 60000
+#        validationQuery: SELECT 1
+#        validationQueryTimeout: 3
+#        validationInterval: 15000
+#        testOnBorrow: true
+#        testWhileIdle: true
+#        testOnReturn: false
+#        jdbcInterceptors: ConnectionState
+#        defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+
+hibernate:
+    flush:
+        mode: AUTO
+    cache:
+        queries: false
+        use_second_level_cache: true
+        use_query_cache: false
+
+---
+environments:
+    development:
+    test:
+    production:

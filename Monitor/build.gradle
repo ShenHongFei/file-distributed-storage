@@ -1,0 +1,88 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
+        classpath "org.grails.plugins:views-gradle:1.1.6"
+    }
+}
+
+group "HM"
+
+apply plugin:'org.grails.grails-web'
+apply plugin:'org.grails.grails-gsp'
+
+repositories {
+    mavenLocal()
+    jcenter()
+    maven { url "https://repo.grails.org/grails/core" }
+}
+
+dependencies {
+    
+    profile "org.grails.profiles:web"
+    
+    compile 'org.springframework.boot:spring-boot-starter-logging'
+    compile 'org.springframework.boot:spring-boot-autoconfigure'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.boot:spring-boot-starter-tomcat'
+    
+    compile 'org.grails:grails-core'
+    compile "org.grails:grails-dependencies"
+    compile 'org.grails:grails-plugin-url-mappings'
+    compile "org.grails:grails-plugin-gsp"
+    compile 'org.grails:grails-plugin-codecs'
+    compile 'org.grails:grails-plugin-interceptors'
+    compile 'org.grails:grails-plugin-services'
+    compile 'org.grails:grails-plugin-datasource'
+    compile 'org.grails:grails-plugin-databinding'
+    compile 'org.grails:grails-web-boot'
+    compile 'org.grails:grails-logging'
+    
+    compile 'org.grails.plugins:cache'
+    compile 'org.grails.plugins:async'
+    compile 'org.grails.plugins:events'
+    compile 'org.grails.plugins:hibernate5'
+    
+    compile 'org.hibernate:hibernate-core:5.1.5.Final'
+    compile 'com.h2database:h2'
+    console 'org.grails:grails-console'
+
+    runtime 'org.apache.tomcat:tomcat-jdbc'
+    
+    testCompile 'org.grails:grails-plugin-testing'
+    testCompile 'org.grails.plugins:geb'
+    testRuntime 'org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1'
+    testRuntime 'net.sourceforge.htmlunit:htmlunit:2.18'
+}
+
+springBoot {
+    // Enable the creation of a fully
+    // executable archive file.
+    executable = true
+}
+
+bootRun {
+    jvmArgs('-Dspring.output.ansi.enabled=always')
+    jvmArgs('-Dfile.encoding=UTF-8')
+    systemProperties=System.properties
+    addResources = true
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
+task 打包{
+    dependsOn assemble
+    doLast{
+        copy{
+            from 'build/libs/HM.jar'
+            into projectDir
+        }
+//        Files.copy(new File(projectDir,'build/libs/HM.jar').toPath(),new File(projectDir,'HM.jar').toPath(),StandardCopyOption.REPLACE_EXISTING)
+    }
+}
