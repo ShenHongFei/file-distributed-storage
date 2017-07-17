@@ -3,11 +3,12 @@
 #!Monitor/
 #!StorageNode/
 
-!data/test-file/灰色鲨鱼.png
-
 .gradle/
 .idea/
 大作业.iml
 **/build
 **/data
 **/log.txt
+
+!data/test-file/灰色鲨鱼.png
+!Monitor/web/data/
