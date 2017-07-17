@@ -50,8 +50,6 @@ class 说明书与测试 extends Specification{
         noExceptionThrown()
     }
     
-    
-    
     def 'FileClient上传文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:
