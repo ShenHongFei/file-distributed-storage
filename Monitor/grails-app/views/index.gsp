@@ -128,21 +128,16 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr class="odd gradeX">
-                                <td>Trident</td>
-                                <td>Internet Explorer 4.0</td>
-                                <td>Win 95+</td>
-                                <td class="center">4</td>
-                                <td class="center">X</td>
-                            </tr>
-                            <tr class="even gradeX">
-                                <td>Trident</td>
-                                <td>Internet Explorer 4.0</td>
-                                <td>Win 95+</td>
-                                <td class="center">4</td>
-                                <td class="center">X</td>
-                            </tr>
-
+                            <g:set var="count2" value="${0}"/>
+                            <g:each in="${files.values()}" var="fileInfo">
+                                <tr class="${count2++%2?'even':'odd'} gradeX">
+                                    <td>${fileInfo.uuid}</td>
+                                    <td>${fileInfo.name}</td>
+                                    <td>${fileInfo.size}</td>
+                                    <td>${fileInfo.main.name}</td>
+                                    <td>${fileInfo.backup.name}</td>
+                                </tr>
+                            </g:each>
                             </tbody>
                         </table>
                     </div>

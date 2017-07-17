@@ -34,6 +34,24 @@ class 说明书与测试 extends Specification{
         noExceptionThrown()
     }
     
+    def '运行StorageNode3'(){
+        storageNode2=new StorageNode('cfg/StorageNode/StorageNode3.properties')
+        when:
+        storageNode2.run()
+        then:
+        noExceptionThrown()
+    }
+    
+    def '运行StorageNode4'(){
+        storageNode2=new StorageNode('cfg/StorageNode/StorageNode4.properties')
+        when:
+        storageNode2.run()
+        then:
+        noExceptionThrown()
+    }
+    
+    
+    
     def 'FileClient上传文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:
