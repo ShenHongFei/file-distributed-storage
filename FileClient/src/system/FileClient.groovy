@@ -2,17 +2,16 @@ package system
 
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
+import net.lingala.zip4j.core.ZipFile
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.util.Zip4jConstants
 import org.apache.logging.log4j.LogManager
 import util.Util
-
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 class FileClient{
     
     static final logger=LogManager.logger
     
-    Scanner scanner =new Scanner(System.in)
     Properties config =new Properties()
     Client  client
     Map<String,UUID> files=[:]
@@ -59,6 +58,7 @@ class FileClient{
     }
     
     /**
+     * 加密本地文件
      * 向FileServer获取存储结点信息
      * 建立到StorageNode的连接并发送上传文件请求(用于上传文件的端口号，文件大小，文件名,backupNodeInfo)
      * @StorageNode 生成 uuid，发回响应（FileReceiver的端口号），给FileReceiver设置临时文件（记录下inetAddress和临时文件的映射）
@@ -69,12 +69,24 @@ class FileClient{
      * @StorageNode 移动临时文件到存储文件夹
      */
     void upload(String path){
+        def file = new File(path)
+        def zipTemp = new File(tempDir,UUID.randomUUID().toString()+'.zip')
+        new ZipFile(zipTemp).addFile(file,new ZipParameters().with{
+            compressionMethod=Zip4jConstants.COMP_DEFLATE
+            compressionLevel=Zip4jConstants.DEFLATE_LEVEL_NORMAL
+            encryptFiles=true
+            encryptionMethod=Zip4jConstants.ENC_METHOD_STANDARD
+            password=config.password
+            it
+        })
+        logger.info "文件压缩成功，原大小:${file.size()} 压缩后：${zipTemp.size()} "
+        
         ChannelFuture clientClose
         ChannelFuture senderClose
         ChannelFuture nodeClientClose
         try{
-            def file = new File(path)
-            client.request=[action:'selectNode',fileSize:file.size()]
+            
+            client.request=[action:'selectNode',fileSize:zipTemp.size()]
             def resp = client.response
             clientClose = client.channel.close()
             NodeInfo main=resp.mainNodeInfo
@@ -86,7 +98,7 @@ class FileClient{
             }
             def freePort= Util.freePort
             def nodeClient=new Client(main.address,main.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
-                c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:backup]
+                c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:zipTemp.size(),backupNodeInfo:backup]
             })
             def nodeResponse = nodeClient.response
             nodeClientClose=nodeClient.channel.close()
@@ -95,7 +107,7 @@ class FileClient{
                 return
             }
             def sender=new FileSender(new InetSocketAddress(main.address,nodeResponse.receiverPort),freePort)
-            sender.send(file).sync()
+            sender.send(zipTemp).sync()
             senderClose=sender.channel.close()
             files[file.name]=nodeResponse.uuid
             println "上传成功 文件名：${file.name}, UUID:$nodeResponse.uuid"
@@ -104,6 +116,7 @@ class FileClient{
             clientClose?.sync()
             senderClose?.sync()
             nodeClientClose?.sync()
+            zipTemp?.delete()
         }
     }
     
@@ -175,20 +188,27 @@ class FileClient{
                 return
             }
         }
-        //todo:输出下载进度
+        //等待运行downloadFinished的线程唤醒
         wait()
         client.channel.close().sync()
     }
     
     synchronized void downloadFinished(Map info){
-        def tempFile=info.tempFile
+        File tempFile=info.tempFile
         if(tempFile.size()!=info.fileSize){
             println '下载失败'
             notifyAll()
-        }else{
-            Files.move(tempFile.toPath(),new File(fileDir,info.uuid.toString()).toPath(),StandardCopyOption.REPLACE_EXISTING)
+            return
         }
-        println("下载成功 文件 $info.fileName 大小 ${Util.getHumanReadableByteCount(info.fileSize,false)} UUID=$info.uuid")
+        def zipFile = new ZipFile(tempFile).with{
+            fileNameCharset='UTF-8'
+            password=config.password
+            it
+        }
+        println("下载成功 文件 $info.fileName 大小 ${Util.getHumanReadableByteCount(info.fileSize)} UUID=$info.uuid")
+        zipFile.extractAll(fileDir.absolutePath)
+        tempFile.delete()
+        println "解压成功 解压后大小 ${Util.getHumanReadableByteCount(new File(fileDir,info.fileName).size())}"
         notifyAll()
     }
     
@@ -199,6 +219,8 @@ class FileClient{
         client.request=[action:'remove',uuid:uuid]
         files.removeAll{k,v->v==uuid}
         saveFiles()
+        client.response
+        client.channel.close()
         println '删除成功'
     }
     

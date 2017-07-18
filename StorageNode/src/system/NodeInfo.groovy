@@ -8,20 +8,26 @@ class NodeInfo implements Comparable,Serializable{
     String  name
     String  address
     Integer port
-    Double  ratio = 0
     Long totalSize=0
     Long usedSize=0
     Date    alive
     
-    
     @Override
     int compareTo(Object o){
-        (this.ratio-o.ratio) as Integer
+        (this.ratio-o.ratio)<=0?-1:1
     }
     
     Boolean isAliveNow(){
         use(TimeCategory){
-            (alive<=>30.seconds.ago)>0
+            (alive<=>18.seconds.ago)>0
         }
+    }
+    
+    Long getFreeSize(){
+        totalSize-usedSize
+    }
+    
+    Double getRatio(){
+        usedSize/totalSize
     }
 }

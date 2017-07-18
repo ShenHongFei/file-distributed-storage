@@ -1,3 +1,4 @@
+<%@ page import="util.Util" %>
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -54,6 +55,15 @@
     </nav>
 
     <div id="page-wrapper" style="margin-left: 0">
+        <%
+            def getHumanReadableByteCount ={ Long bytes,si=false->
+                int unit = si? 1000 : 1024
+                if (bytes <unit) return bytes +" B"
+                int exp = (int) (Math.log(bytes)/Math.log(unit))
+                String pre = (si?"kMGTPE" :"KMGTPE")[exp-1] + (si?"" :"i")
+                return String.format("%.1f %sB", bytes/Math.pow(unit, exp), pre)
+            }
+        %>
         <div class="row">
             <div class="col-lg-12">
                 <h4 class="page-header" style="padding-bottom: 9px; margin: 10px 0 10px;">存储结点</h4>
@@ -88,9 +98,9 @@
                                     <td>${node.address}</td>
                                     <td>${node.port}</td>
                                     <td class="center">${node.aliveNow?'在线':'离线'}</td>
-                                    <td class="center">${node.ratio}</td>
-                                    <td class="center">${node.usedSize}</td>
-                                    <td class="center">${node.totalSize}</td>
+                                    <td class="center">${Math.round(node.ratio*100)+'%'}</td>
+                                    <td class="center"><%=getHumanReadableByteCount(node.usedSize)  %></td>
+                                    <td class="center"><%=getHumanReadableByteCount(node.totalSize)  %></td>
                                 </tr>
                             </g:each>
                             </tbody>
@@ -133,9 +143,9 @@
                                 <tr class="${count2++%2?'even':'odd'} gradeX">
                                     <td>${fileInfo.uuid}</td>
                                     <td>${fileInfo.name}</td>
-                                    <td>${fileInfo.size}</td>
-                                    <td>${fileInfo.main.name}</td>
-                                    <td>${fileInfo.backup.name}</td>
+                                    <td class="center"><%=getHumanReadableByteCount(fileInfo.size)  %></td>
+                                    <td>${fileInfo?.main?.name}</td>
+                                    <td>${fileInfo?.backup?.name}</td>
                                 </tr>
                             </g:each>
                             </tbody>

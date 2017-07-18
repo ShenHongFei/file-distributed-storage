@@ -9,6 +9,8 @@ class 说明书与测试 extends Specification{
     @Shared FileServer fileServer
     @Shared StorageNode storageNode1
     @Shared StorageNode storageNode2
+    @Shared StorageNode storageNode3
+    @Shared StorageNode storageNode4
     
     def '运行服务器'(){
         fileServer=new FileServer()
@@ -35,17 +37,17 @@ class 说明书与测试 extends Specification{
     }
     
     def '运行StorageNode3'(){
-        storageNode2=new StorageNode('cfg/StorageNode/StorageNode3.properties')
+        storageNode3=new StorageNode('cfg/StorageNode/StorageNode3.properties')
         when:
-        storageNode2.run()
+        storageNode3.run()
         then:
         noExceptionThrown()
     }
     
     def '运行StorageNode4'(){
-        storageNode2=new StorageNode('cfg/StorageNode/StorageNode4.properties')
+        storageNode4=new StorageNode('cfg/StorageNode/StorageNode4.properties')
         when:
-        storageNode2.run()
+        storageNode4.run()
         then:
         noExceptionThrown()
     }
@@ -66,10 +68,26 @@ class 说明书与测试 extends Specification{
         noExceptionThrown()
     }
     
-    def 'FileClient下载文件'(){
+    def 'FileClient下载最近上传的文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:
         fileClient.run('download',fileClient.files.iterator().next().value.toString())
+        then:
+        noExceptionThrown()
+    }
+    
+    def 'FileClient根据UUID下载文件'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('download','495dcf5a-e49e-48c4-a46f-f58bc5e1e3e5')
+        then:
+        noExceptionThrown()
+    }
+    
+    def 'FileClient删除最近上传文件'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('remove',fileClient.files.iterator().next().value.toString())
         then:
         noExceptionThrown()
     }

@@ -30,7 +30,7 @@ class StorageNode{
         (dataDir=new File(config.rootDir)).mkdirs()
         (tempDir=new File(dataDir,'temp')).mkdirs()
         (fileDir=new File(dataDir,'file')).mkdirs()
-        nodeInfo=new NodeInfo(address:config.nodeIP,name:config.nodeName,port:config.nodePort as Integer)
+        nodeInfo=new NodeInfo(address:config.nodeIP,name:config.nodeName,port:config.nodePort as Integer,totalSize:Util.getBytesFromFileSizeString(config.totalSize),usedSize:fileDir.directorySize())
         udpClient=new Client(config.fileServerIP,config.fileServerUdpPort as Integer,ConnectionType.UDP,null)
         client=new Client(config.fileServerIP,config.fileServerPort as Integer,ConnectionType.TCP,null)
         server=new Server(this,config.nodePort as Integer,ConnectionType.TCP,null)
@@ -50,7 +50,10 @@ class StorageNode{
      */
     synchronized void upload(ChannelHandlerContext ctx,Map map){
         def uuid=map.uuid?:UUID.randomUUID()
-        //todo:检查剩余空间
+        if(map.fileSize>nodeInfo.freeSize){
+            ctx.channel().writeAndFlush([result:false,message:'存储结点空间不足，上传失败'])
+            return
+        }
         receiver.infos[new InetSocketAddress((ctx.channel().remoteAddress() as InetSocketAddress).address,map.senderPort)]=[fileName:map.fileName,fileSize:map.fileSize,uuid:uuid,tempFile:new File(tempDir,uuid.toString()),finishedCallback:this.&uploadFinished,backupNodeInfo:map.backupNodeInfo]
         //发送 允许上传 响应
         ctx.channel().writeAndFlush([result:true,uuid:uuid,receiverPort:(receiver.serverChannel.localAddress() as InetSocketAddress).port])
@@ -65,25 +68,29 @@ class StorageNode{
      */
     void uploadFinished(Map info){
         //todo:失败处理,根据info 的result,error
-        //todo:更新容量
         File file = new File(fileDir,info.uuid.toString())
         Files.move(info.tempFile.toPath(),file.toPath())
+        synchronized(nodeInfo){
+            nodeInfo.usedSize+=file.size()
+        }
         NodeInfo backup=info.backupNodeInfo
         if(backup){
-            //it is main
-            //重复FileClient代码，将backupNodeInfo设为null,
-            def freePort= Util.freePort
-            def nodeClient=new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
-                c.request=[action:'upload',senderPort:freePort,fileName:file.name,fileSize:file.size(),backupNodeInfo:null,uuid:info.uuid]
-            })
-            def nodeResponse = nodeClient.response
-            if(!nodeResponse.result){
-                println nodeResponse.message
-                return
-            }
-            def sender=new FileSender(new InetSocketAddress(backup.address,nodeResponse.receiverPort),freePort)
-            sender.send(file)
-            logger.info "正在备份文件 $nodeResponse.uuid 至备份结点 $backup"
+            try{
+                //it is main
+                //重复FileClient代码，将backupNodeInfo设为null,
+                def freePort= Util.freePort
+                def nodeClient=new Client(backup.address,backup.port,ConnectionType.TCP,{Client c,ChannelHandlerContext ctx->
+                    c.request=[action:'upload',senderPort:freePort,fileName:info.fileName,fileSize:file.size(),backupNodeInfo:null,uuid:info.uuid]
+                })
+                def nodeResponse = nodeClient.response
+                if(!nodeResponse.result){
+                    println nodeResponse.message
+                    return
+                }
+                def sender=new FileSender(new InetSocketAddress(backup.address,nodeResponse.receiverPort),freePort)
+                sender.send(file)
+                logger.info "正在备份文件 $nodeResponse.uuid 至备份结点 $backup"
+            }catch(any){any.printStackTrace()}
         }
         client.request=[action:'addFile',uuid:info.uuid,nodeInfo:nodeInfo,fileName:info.fileName,fileSize:info.fileSize]
     }
@@ -105,7 +112,10 @@ class StorageNode{
     }
     
     def remove(ChannelHandlerContext ctx,Map map){
-        new File(fileDir,"$map.uuid").delete()
+        def file = new File(fileDir,"$map.uuid")
+        synchronized(nodeInfo){
+            nodeInfo.usedSize-=file.size()
+        }
+        file.delete()
     }
-    
 }

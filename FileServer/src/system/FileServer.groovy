@@ -43,8 +43,7 @@ class FileServer{
     void selectNode(ChannelHandlerContext ctx,Map map){
         NodeInfo main=null
         NodeInfo backup=null
-        map.fileSize
-        nodes.findAll{it.value.aliveNow}.toSorted{it.value}.iterator().with{
+        nodes.findAll{it.value.aliveNow&&it.value.freeSize>map.fileSize}.toSorted{it.value}.iterator().with{
             if(it.hasNext()) main=next().value
             if(it.hasNext()) backup=next().value
         }
@@ -98,7 +97,7 @@ class FileServer{
                 })
             }
         }catch(any){}
-        
+        ctx.writeAndFlush([result:true])
         files.remove(map.uuid)
         saveFiles()
     }
