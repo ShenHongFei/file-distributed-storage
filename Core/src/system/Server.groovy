@@ -1,6 +1,5 @@
 package system
 
-import com.sun.istack.internal.Nullable
 import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
@@ -16,7 +15,6 @@ import io.netty.handler.codec.serialization.ObjectDecoder
 import io.netty.handler.codec.serialization.ObjectEncoder
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Log4J2LoggerFactory
 
@@ -35,7 +33,7 @@ class Server{
      * @param server 业务服务器对象
      * @param initAction 连接建立后执行，闭包参数为 BusinessServer ..,ChannelHandlerContext ..
      */
-    Server(server,Integer port,ConnectionType type,@Nullable Closure initAction,ChannelHandler... extraHandlers){
+    Server(server,Integer port,ConnectionType type=ConnectionType.TCP,Closure initAction=null,ChannelHandler... extraHandlers=null){
         if(type==ConnectionType.TCP){
                             //ServerBootstrap 初始化options,attrs
             serverChannel=new ServerBootstrap().with{
