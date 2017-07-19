@@ -1,4 +1,4 @@
-package system
+package core
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.Unpooled
@@ -23,9 +23,6 @@ import org.apache.logging.log4j.LogManager
 
 import java.util.concurrent.*
 
-import static system.ConnectionType.TCP
-
-
 //IMPORTANT
 class Client{
     
@@ -44,13 +41,13 @@ class Client{
     /**
      * @param initAction 连接建立后执行，闭包参数为 Client ..,ChannelHandlerContext ..
      */
-    Client(String serverAddress,Integer serverPort,ConnectionType type=TCP,Closure initAction=null,ChannelHandler... extraHandlers=null){
+    Client(String serverAddress,Integer serverPort,ConnectionType type=ConnectionType.TCP,Closure initAction=null,ChannelHandler... extraHandlers=null){
         serverSocketAddress=SocketUtils.socketAddress(serverAddress,serverPort)
         this.type=type
         channel=new Bootstrap().with{
             group(new NioEventLoopGroup())
             handler(new LoggingHandler(LogLevel.DEBUG))
-            if(type==TCP){
+            if(type==ConnectionType.TCP){
                 channel(NioSocketChannel)
                 option(ChannelOption.SO_KEEPALIVE,true)
                 handler({Channel ch->ch.pipeline().addLast(
@@ -71,7 +68,7 @@ class Client{
     
     void setRequest(Map req){
         requestGet=false
-        if(type==TCP){
+        if(type==ConnectionType.TCP){
             //断线重连
             if(!channel.active){
                 logger.info "尝试断线重连..."

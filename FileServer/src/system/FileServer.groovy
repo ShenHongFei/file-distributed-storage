@@ -1,5 +1,8 @@
 package system
 
+import core.Client
+import core.ConnectionType
+import core.Server
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
@@ -8,7 +11,7 @@ class FileServer{
     
     static logger=LogManager.getLogger(FileServer)
     
-    Server               server    = new Server(this,8080)
+    Server server    = new Server(this,8080)
     Server               udpServer = new Server(this,8081,ConnectionType.UDP)
     File                 fileser   = new File('data/FileServer/files.dat')
     Map<String,NodeInfo> nodes     = [:]

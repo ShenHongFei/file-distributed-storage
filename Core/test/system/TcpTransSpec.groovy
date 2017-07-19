@@ -1,17 +1,19 @@
 package system
 
+import core.Client
+import core.ConnectionType
+import core.Server
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
-import org.spockframework.compiler.model.CleanupBlock
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.awt.Point
+import java.awt.*
 
 class TestServer{
     static final logger=LogManager.getLogger(TcpTransSpec)
     
-    Server                server = new Server(this,8080,ConnectionType.TCP,null)
+    Server server = new Server(this,8080,ConnectionType.TCP,null)
     def                   data
     ChannelHandlerContext ctx
     String                action

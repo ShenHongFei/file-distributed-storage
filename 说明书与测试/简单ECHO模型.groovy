@@ -1,8 +1,8 @@
+import core.Client
+import core.Server
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
 import spock.lang.Specification
-import system.Client
-import system.Server
 
 class 简单ECHO模型 extends Specification{
     

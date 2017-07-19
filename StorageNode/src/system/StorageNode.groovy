@@ -1,5 +1,6 @@
 package system
 
+import core.*
 import io.netty.channel.ChannelHandlerContext
 import org.apache.logging.log4j.LogManager
 import util.Util
@@ -14,10 +15,10 @@ class StorageNode{
     File         dataDir
     File         tempDir
     File         fileDir
-    Client       udpClient
+    Client udpClient
     Client       client
     FileReceiver receiver=new FileReceiver(0)
-    Server       server
+    Server server
     NodeInfo     nodeInfo
     Map<UUID,ServerSocket> senderSockets =[:]
     

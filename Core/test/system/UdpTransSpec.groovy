@@ -1,15 +1,16 @@
 package system
 
+import core.Client
+import core.ConnectionType
+import core.Server
 import io.netty.channel.ChannelHandlerContext
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.awt.*
-
 class UdpTransSpec extends Specification{
     
     @Shared TestServer testServer =new TestServer()
-    @Shared Client     client     =new Client('localhost',8081,ConnectionType.UDP,null)
+    @Shared Client client     =new Client('localhost',8081,ConnectionType.UDP,null)
     
     class TestServer{
         Server server=new Server(this,8081,ConnectionType.UDP,null)

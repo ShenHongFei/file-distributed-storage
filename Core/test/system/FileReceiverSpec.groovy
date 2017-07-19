@@ -1,5 +1,6 @@
 package system
 
+import core.FileReceiver
 import spock.lang.Specification
 
 class FileReceiverSpec extends Specification{

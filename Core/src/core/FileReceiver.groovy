@@ -1,4 +1,4 @@
-package system
+package core
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBuf

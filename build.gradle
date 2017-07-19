@@ -1,10 +1,9 @@
+//!!用Intellij idea 运行测试，启动gradle的jvm参数加上-Dfile.encoding=UTF-8 不乱码
 buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        maven { url "https://plugins.gradle.org/m2/"}
     }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
@@ -13,23 +12,15 @@ buildscript {
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
     }
 }
-
 allprojects{
     apply plugin:'groovy'
-    apply plugin:'application'
-    
     repositories {
         mavenLocal()
         jcenter()
         mavenCentral()
     }
-    
     dependencies{
         compile 'org.codehaus.groovy:groovy-all:+'
-        
-        compile 'io.netty:netty-all:4.1.12.Final'
-        //zip加密压缩
-        compile 'net.lingala.zip4j:zip4j:1.3.2'
         
         //日志
         compile 'org.apache.logging.log4j:log4j-api:+'
@@ -38,20 +29,46 @@ allprojects{
         compile 'com.fasterxml.jackson.core:jackson-databind:+'
         
         testCompile 'org.spockframework:spock-core:+'
-    
     }
-    
-    compileGroovy{
-        options.encoding='UTF-8'
-    }
-    
-    System.setProperty('file.encoding', 'UTF-8')
+//    compileGroovy{
+//        options.encoding='UTF-8'
+//    }
+//    compileTestGroovy{
+//        options.encoding='UTF-8'
+//    }
+//    compileJava{
+//        options.encoding='UTF-8'
+//    }
+//    compileTestJava{
+//        options.encoding='UTF-8'
+//    }
 }
+dependencies{
+    compile project(':Core')
+    compile project(':FileClient')
+    compile project(':FileServer')
+    compile project(':StorageNode')
+}
+sourceSets{
+    test{
+        groovy{
+            srcDirs=['说明书与测试']
+        }
+        resources{
+            srcDirs=['cfg']
+        }
+    }
+}
+wrapper{
+    gradleVersion = '4.0'
+}
+//compileTestGroovy {
+//    source = fileTree(dir: projectDir).matching { include '*.groovy' }
+//}
 
-subprojects{ subproject->
-    if(subproject.name=='Monitor') return 
+subprojects{
     apply plugin:'com.github.johnrengelman.shadow'
-    
+    apply plugin:'application'
     sourceSets{
         main{
             groovy{
@@ -70,84 +87,47 @@ subprojects{ subproject->
             }*/
         }
     }
-    
-    mainClassName=subproject.name
-    
-    dependencies{
-        //子项目依赖 Core <- StorageNode <- FileServer <- FileClient
-        switch(subproject.name){
-            case 'StorageNode':compile project(':Core');break
-            case 'FileServer':compile project(':StorageNode');break
-            case 'FileClient':compile project(':FileServer');break
-            case 'Monitor':compile project(':Core');break
-        }
-    }
-    
+    mainClassName=it.name
     shadowJar{
-        doLast{
-            copy{
-                from 'build/libs/作业2-all.jar'
-                into projectDir
-                rename({'homework2.jar'})
-            }
-        }
+//        doLast{
+//            copy{
+//                from 'build/libs/作业2-all.jar'
+//                into projectDir
+//                rename({'homework2.jar'})
+//            }
+//        }
     }
 }
-
-dependencies{
-    compile project(':FileClient')
-}
-
-/*compileTestGroovy {
-    source = fileTree(dir: projectDir).matching { include '*.groovy' }
-}*/
-
-sourceSets{
-    test{
-        groovy{
-            srcDirs=['说明书与测试']
-        }
-        resources{
-            srcDirs=['cfg']
-        }
+project(':Core'){
+    dependencies{
+        compile 'io.netty:netty-all:4.1.12.Final'
+        compile 'net.lingala.zip4j:zip4j:1.3.2' //zip加密压缩
     }
 }
-
-wrapper{
-    gradleVersion = '4.0'
+project(':StorageNode'){
+    dependencies{
+        compile project(':Core')
+    }
 }
-
-project('Monitor'){
-    group "HM"
-    
+project(':FileServer'){
+    dependencies{
+        compile project(':StorageNode')
+    }
+}
+project(':FileClient'){
+    dependencies{
+        compile project(':FileServer')
+    }
+}
+project(':Monitor'){
     apply plugin:'org.grails.grails-web'
-    apply plugin:'asset-pipeline'
     apply plugin:'org.grails.grails-gsp'
-    
     mainClassName='hm.Application'
-    
-    findMainClass{
-        setMainClassName('hm.Application')
-    }
-    
     repositories {
-        mavenLocal()
-        jcenter()
         maven { url "https://repo.grails.org/grails/core" }
     }
-    
     dependencies {
         compile rootProject.project(':FileServer')
-        
-        compile 'io.netty:netty-all:4.1.12.Final'
-        
-        //日志
-        compile 'org.apache.logging.log4j:log4j-api:+'
-        compile 'org.apache.logging.log4j:log4j-core:+'
-        compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:+'
-        compile 'com.fasterxml.jackson.core:jackson-databind:+'
-        
-        testCompile 'org.spockframework:spock-core:+'
         
         profile "org.grails.profiles:web"
         
@@ -192,6 +172,7 @@ project('Monitor'){
         // Enable the creation of a fully
         // executable archive file.
         executable = true
+        mainClass='hm.Application'
     }
     
     run{
@@ -200,9 +181,4 @@ project('Monitor'){
         jvmArgs('-Dfile.encoding=UTF-8')
     }
     
-    compileGroovy{
-        options.encoding='UTF-8'
-    }
-    
-    System.setProperty('file.encoding', 'UTF-8')
 }

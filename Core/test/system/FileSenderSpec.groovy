@@ -1,5 +1,6 @@
 package system
 
+import core.FileSender
 import spock.lang.Specification
 
 class FileSenderSpec extends Specification{

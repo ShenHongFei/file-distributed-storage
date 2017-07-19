@@ -1,2 +1,2 @@
-include 'Core','FileClient','FileServer','Monitor','StorageNode'
 rootProject.name='大作业'
+include 'Core','FileClient','FileServer','Monitor','StorageNode'

@@ -13,11 +13,11 @@ https://juejin.im/post/58ea47cbda2f60005f070a70
 [http://v.youku.com/v_show/id_XMjg5MzU3OTczNg==.html?spm=a2h3j.8428770.3416059.1](http://v.youku.com/v_show/id_XMjg5MzU3OTczNg==.html?spm=a2h3j.8428770.3416059.1)
 
 ## Monitor
-![monitor](demo/monitor.png)
+![monitor](doc/monitor.png)
 
-![说明书](demo/129.png)
+![说明书](doc/129.png)
 
 ### 进度
-![大作业.jpg](大作业.jpg)
+![大作业.jpg](doc/大作业.jpg)
 
 

@@ -1,5 +1,9 @@
 package system
 
+import core.Client
+import core.ConnectionType
+import core.FileReceiver
+import core.FileSender
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import net.lingala.zip4j.core.ZipFile
@@ -13,7 +17,7 @@ class FileClient{
     static final logger=LogManager.logger
     
     Properties config =new Properties()
-    Client  client
+    Client client
     Map<String,UUID> files=[:]
     File fileSer
     File dataDir

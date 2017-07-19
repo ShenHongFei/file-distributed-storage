@@ -1,13 +1,12 @@
-package system
+package core
 
 import com.sun.istack.internal.Nullable
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.socket.DatagramPacket
-
-//!不是JDK中的DatagramPacket
 import org.apache.logging.log4j.LogManager
 
+//!不是JDK中的DatagramPacket
 class UDPRequestHandler extends SimpleChannelInboundHandler<DatagramPacket>{
     static logger=LogManager.getLogger(UDPRequestHandler)
     

@@ -1,6 +1,6 @@
 package hm
 
-import system.Client
+import core.Client
 
 class MonitorController{
     //todo:想明白为什么在这些controller中能够直接得到params,controller,action,为什么不能调用removeAll等方法
