@@ -8,8 +8,8 @@ class FileServer{
     
     static logger=LogManager.getLogger(FileServer)
     
-    def               server    = new Server(this,8080,ConnectionType.TCP,null)
-    Server               udpServer = new Server(this,8081,ConnectionType.UDP,null)
+    Server               server    = new Server(this,8080)
+    Server               udpServer = new Server(this,8081,ConnectionType.UDP)
     File                 fileser   = new File('data/FileServer/files.dat')
     Map<String,NodeInfo> nodes     = [:]
     Map<UUID,FileInfo>   files     = [:]
@@ -108,7 +108,7 @@ class FileServer{
         }
     }
     
-    def getStatus(ChannelHandlerContext ctx,Map map){
+    void getStatus(ChannelHandlerContext ctx,Map map){
         ctx.writeAndFlush([nodes:nodes,files:files])
     }
 }

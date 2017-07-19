@@ -137,7 +137,7 @@ project('Monitor'){
     }
     
     dependencies {
-        compile project(':FileServer')
+        compile rootProject.project(':FileServer')
         
         compile 'io.netty:netty-all:4.1.12.Final'
         

@@ -61,10 +61,10 @@ class FileClient{
      * 加密本地文件
      * 向FileServer获取存储结点信息
      * 建立到StorageNode的连接并发送上传文件请求(用于上传文件的端口号，文件大小，文件名,backupNodeInfo)
-     * @StorageNode 生成 uuid，发回响应（FileReceiver的端口号），给FileReceiver设置临时文件（记录下inetAddress和临时文件的映射）
+     * @StorageNode 查看剩余空间情况，生成 uuid，发回响应（FileReceiver的端口号），给FileReceiver设置临时文件（记录下inetAddress和临时文件的映射）
      * new FileSender(),上传文件
      * 等待FileSender发送完成 同时 输出进度信息
-     * @StorageNode 向FileServer发送文件信息{文件名，uuid}
+     * @StorageNode 向FileServer发送文件信息{文件名，uuid，存储结点信息}
      * @FileServer 存储文件信息，向StorageNode确认
      * @StorageNode 移动临时文件到存储文件夹
      */

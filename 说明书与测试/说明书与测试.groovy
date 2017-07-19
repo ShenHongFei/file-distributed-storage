@@ -49,8 +49,17 @@ class 说明书与测试 extends Specification{
         then:
         noExceptionThrown()
     }
+    
     def 'FileClient上传文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
+        when:
+        fileClient.run('upload','data/test-file/灰色鲨鱼.png')
+        then:
+        noExceptionThrown()
+    }
+    
+    def 'FileClient上传文件2'(){
+        def fileClient=new FileClient('cfg/FileClient/FileClient2.properties')
         when:
         fileClient.run('upload','data/test-file/灰色鲨鱼.png')
         then:
@@ -76,7 +85,7 @@ class 说明书与测试 extends Specification{
     def 'FileClient根据UUID下载文件'(){
         def fileClient=new FileClient('cfg/FileClient/FileClient1.properties')
         when:
-        fileClient.run('download','495dcf5a-e49e-48c4-a46f-f58bc5e1e3e5')
+        fileClient.run('download','e5781c93-b81f-4e55-bc53-f5b890f7bc74')
         then:
         noExceptionThrown()
     }

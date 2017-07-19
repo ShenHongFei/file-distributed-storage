@@ -28,7 +28,10 @@ class 简单ECHO模型 extends Specification{
             client.setRequest(map)
             
             //阻塞等待并接收Map
-            logger.info(client.getResponse())
+            Map<String,Object> response = client.getResponse()
+            
+            //输出日志
+            logger.info(response)
             
             //释放连接
             client.channel.close().sync()
